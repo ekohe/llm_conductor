@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the abstraction of the `app/workers/language_model` folder into a reusable gem/lib called `RailsLlmClient`.
+This document summarizes the abstraction of the `app/workers/language_model` folder into a reusable gem/lib called `LlmConductor`.
 
 ## Architecture Comparison
 
@@ -62,7 +62,7 @@ lib/llm_conductor/
 @client ||= Ollama.new(credentials: { address: ENV.fetch('OLLAMA_ADDRESS') })
 
 # After: Centralized configuration
-RailsLlmClient.configure do |config|
+LlmConductor.configure do |config|
   config.openai(api_key: ENV['OPENAI_API_KEY'])
   config.ollama(base_url: ENV['OLLAMA_ADDRESS'])
 end
@@ -79,7 +79,7 @@ def prompt_summarize_description(data)
 end
 
 # After: Flexible registration
-RailsLlmClient::PromptManager.register(:company_analysis, CompanyAnalysisPrompt)
+LlmConductor::PromptManager.register(:company_analysis, CompanyAnalysisPrompt)
 ```
 
 ### 3. **Error Handling**
@@ -127,7 +127,7 @@ class CompanyDataBuilder
 end
 
 # After: Extensible base with helpers
-class CompanyDataBuilder < RailsLlmClient::DataBuilder
+class CompanyDataBuilder < LlmConductor::DataBuilder
   def build
     extract_attributes(:id, :name, :domain_name) +
     extract_nested_data(:data, 'categories', 'founded_on')
@@ -145,7 +145,7 @@ client = LanguageModel::ClientFactory.build(model: 'gpt-4', type: :summarize)
 result = client.generate(data: data)
 
 # After: One-liner
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-4',
   data: CompanyDataBuilder.new(company).build,
   type: :company_analysis
@@ -176,14 +176,14 @@ end
 
 # After: Rails integration with helpers
 class AnalysisController < ApplicationController
-  include RailsLlmClient::Integrations::Rails
+  include LlmConductor::Integrations::Rails
 
   def analysis
     response = llm_client(model: 'gpt-4', type: :web_analysis)
                  .generate(data: build_data)
     
     render json: { analysis: response.parse_json }
-  rescue RailsLlmClient::Error => e
+  rescue LlmConductor::Error => e
     render json: handle_llm_error(e)
   end
 end

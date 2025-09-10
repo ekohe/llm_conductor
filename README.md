@@ -58,4 +58,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the RailsLlmClient project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/llm_conductor/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the LlmConductor project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/llm_conductor/blob/main/CODE_OF_CONDUCT.md).

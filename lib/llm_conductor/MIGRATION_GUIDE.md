@@ -1,6 +1,6 @@
-# Migration Guide: From LanguageModel Workers to RailsLlmClient
+# Migration Guide: From LanguageModel Workers to LlmConductor
 
-This guide will help you migrate your existing `app/workers/language_model` code to use the new `RailsLlmClient` gem.
+This guide will help you migrate your existing `app/workers/language_model` code to use the new `LlmConductor` gem.
 
 ## Overview of Changes
 
@@ -24,7 +24,7 @@ gem 'llm_conductor', path: 'lib/llm_conductor' # or from rubygems when published
 Create configuration file:
 ```ruby
 # config/initializers/llm_conductor.rb
-RailsLlmClient.configure do |config|
+LlmConductor.configure do |config|
   config.default_model = 'gpt-3.5-turbo'
   config.timeout = 30
   config.max_retries = 3
@@ -60,7 +60,7 @@ end
 **After** - Create prompt classes:
 ```ruby
 # app/llm_prompts/company_analysis_prompt.rb
-class CompanyAnalysisPrompt < RailsLlmClient::Prompts::BasePrompt
+class CompanyAnalysisPrompt < LlmConductor::Prompts::BasePrompt
   def render
     <<~PROMPT
       Given the company's name, domain, description...
@@ -72,7 +72,7 @@ class CompanyAnalysisPrompt < RailsLlmClient::Prompts::BasePrompt
 end
 
 # app/llm_prompts/featured_links_prompt.rb
-class FeaturedLinksPrompt < RailsLlmClient::Prompts::BasePrompt
+class FeaturedLinksPrompt < LlmConductor::Prompts::BasePrompt
   def render
     # ... prompt content using helper methods
   end
@@ -82,8 +82,8 @@ end
 Register prompts in an initializer:
 ```ruby
 # config/initializers/llm_prompts.rb
-RailsLlmClient::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
-RailsLlmClient::PromptManager.register(:featured_links, FeaturedLinksPrompt)
+LlmConductor::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
+LlmConductor::PromptManager.register(:featured_links, FeaturedLinksPrompt)
 ```
 
 ### 3. Migrate Data Builders
@@ -110,7 +110,7 @@ end
 **After**:
 ```ruby
 # app/data_builders/company_data_builder.rb
-class CompanyDataBuilder < RailsLlmClient::DataBuilder
+class CompanyDataBuilder < LlmConductor::DataBuilder
   def build
     {
       id: safe_extract(:id),
@@ -159,7 +159,7 @@ end
 **After**:
 ```ruby
 # app/workers/company_analysis_worker.rb
-class CompanyAnalysisWorker < RailsLlmClient::Integrations::SidekiqWorker
+class CompanyAnalysisWorker < LlmConductor::Integrations::SidekiqWorker
   sidekiq_options queue: 'data_monthly', retry: false
 
   def perform(model, company_id, analysis_type = 'summarize_description')
@@ -220,7 +220,7 @@ end
 ```ruby
 # app/controllers/api/web_contents_controller.rb
 class Api::WebContentsController < BaseController
-  include RailsLlmClient::Integrations::Rails
+  include LlmConductor::Integrations::Rails
 
   def analysis
     data = WebContentDataBuilder.new(
@@ -237,7 +237,7 @@ class Api::WebContentsController < BaseController
 
       company = response.parse_json
       api_success({ company: company })
-    rescue RailsLlmClient::Error => e
+    rescue LlmConductor::Error => e
       api_error handle_llm_error(e)
     end
   end
@@ -260,9 +260,9 @@ Based on your existing prompts, register them:
 
 ```ruby
 # config/initializers/llm_prompts.rb
-RailsLlmClient::PromptManager.register(:summarize_htmls, WebContentAnalysisPrompt)
-RailsLlmClient::PromptManager.register(:featured_links, FeaturedLinksPrompt)
-RailsLlmClient::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
+LlmConductor::PromptManager.register(:summarize_htmls, WebContentAnalysisPrompt)
+LlmConductor::PromptManager.register(:featured_links, FeaturedLinksPrompt)
+LlmConductor::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
 ```
 
 ### 7. Update Job Calls
@@ -293,8 +293,8 @@ RSpec.describe CompanyAnalysisWorker do
   let(:company) { create(:company) }
   
   before do
-    allow(RailsLlmClient).to receive(:generate).and_return(
-      RailsLlmClient::Response.new(
+    allow(LlmConductor).to receive(:generate).and_return(
+      LlmConductor::Response.new(
         input: 'test',
         output: '{"analysis": "test"}',
         input_tokens: 10,
@@ -333,13 +333,13 @@ If you need to rollback:
 ### Issue: Prompt not found
 ```ruby
 # Solution: Make sure prompts are registered
-RailsLlmClient::PromptManager.register(:your_prompt_type, YourPromptClass)
+LlmConductor::PromptManager.register(:your_prompt_type, YourPromptClass)
 ```
 
 ### Issue: Provider not configured
 ```ruby
 # Solution: Add provider configuration
-RailsLlmClient.configure do |config|
+LlmConductor.configure do |config|
   config.openai(api_key: ENV['OPENAI_API_KEY'])
 end
 ```

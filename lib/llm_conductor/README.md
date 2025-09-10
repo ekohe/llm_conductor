@@ -1,4 +1,4 @@
-# RailsLlmClient
+# LlmConductor
 
 A comprehensive Ruby gem for integrating multiple Language Model providers into Rails applications with a unified interface, flexible prompt management, and robust error handling.
 
@@ -33,7 +33,7 @@ bundle install
 
 ```ruby
 # config/initializers/llm_conductor.rb
-RailsLlmClient.configure do |config|
+LlmConductor.configure do |config|
   # Default settings
   config.default_model = 'gpt-3.5-turbo'
   config.default_vendor = :openai
@@ -76,7 +76,7 @@ OLLAMA_ADDRESS=http://localhost:11434
 
 ```ruby
 # Simple text generation
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-3.5-turbo',
   prompt: 'Explain quantum computing in simple terms'
 )
@@ -90,7 +90,7 @@ puts "Cost: $#{response.metadata[:cost]}" if response.metadata[:cost]
 
 ```ruby
 # Register a prompt template
-RailsLlmClient::PromptManager.register(:company_summary, <<~TEMPLATE)
+LlmConductor::PromptManager.register(:company_summary, <<~TEMPLATE)
   Analyze this company:
   Name: <%= name %>
   Description: <%= description %>
@@ -106,7 +106,7 @@ company_data = {
   industry: 'Technology'
 }
 
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-4',
   data: company_data,
   type: :company_summary
@@ -116,7 +116,7 @@ response = RailsLlmClient.generate(
 ### Custom Prompt Classes
 
 ```ruby
-class CompanyAnalysisPrompt < RailsLlmClient::Prompts::BasePrompt
+class CompanyAnalysisPrompt < LlmConductor::Prompts::BasePrompt
   def render
     <<~PROMPT
       Company: #{name}
@@ -135,10 +135,10 @@ class CompanyAnalysisPrompt < RailsLlmClient::Prompts::BasePrompt
 end
 
 # Register the prompt class
-RailsLlmClient::PromptManager.register(:detailed_analysis, CompanyAnalysisPrompt)
+LlmConductor::PromptManager.register(:detailed_analysis, CompanyAnalysisPrompt)
 
 # Use it
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-4',
   data: company_data,
   type: :detailed_analysis
@@ -151,7 +151,7 @@ analysis = response.parse_json
 ### Custom Data Builders
 
 ```ruby
-class CompanyDataBuilder < RailsLlmClient::DataBuilder
+class CompanyDataBuilder < LlmConductor::DataBuilder
   def build
     {
       id: source_object.id,
@@ -179,7 +179,7 @@ company = Company.find(1)
 builder = CompanyDataBuilder.new(company)
 data = builder.build
 
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-3.5-turbo',
   data: data,
   type: :company_summary
@@ -190,7 +190,7 @@ response = RailsLlmClient.generate(
 
 ```ruby
 class AnalysisController < ApplicationController
-  include RailsLlmClient::Integrations::Rails
+  include LlmConductor::Integrations::Rails
 
   def analyze_company
     company = Company.find(params[:id])
@@ -204,7 +204,7 @@ class AnalysisController < ApplicationController
         tokens_used: response.total_tokens,
         success: response.success?
       }
-    rescue RailsLlmClient::Error => e
+    rescue LlmConductor::Error => e
       render json: handle_llm_error(e), status: :unprocessable_entity
     end
   end
@@ -225,7 +225,7 @@ end
 ### Sidekiq Background Jobs
 
 ```ruby
-class CompanyAnalysisWorker < RailsLlmClient::Integrations::SidekiqWorker
+class CompanyAnalysisWorker < LlmConductor::Integrations::SidekiqWorker
   sidekiq_options queue: 'llm_analysis', retry: 3
 
   def perform(model, company_id, analysis_type)
@@ -256,7 +256,7 @@ end
 ### Streaming Responses
 
 ```ruby
-client = RailsLlmClient.client(model: 'gpt-3.5-turbo')
+client = LlmConductor.client(model: 'gpt-3.5-turbo')
 
 client.stream(prompt: 'Write a story about AI') do |chunk|
   print chunk['choices'][0]['delta']['content'] if chunk.dig('choices', 0, 'delta', 'content')
@@ -267,7 +267,7 @@ end
 
 ```ruby
 # Per-request configuration
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'gpt-4',
   prompt: 'Analyze this data...',
   temperature: 0.2,
@@ -276,14 +276,14 @@ response = RailsLlmClient.generate(
 )
 
 # Custom retry policy
-client = RailsLlmClient.client(
+client = LlmConductor.client(
   model: 'gpt-3.5-turbo',
   max_retries: 5,
   retry_delay: 2.0
 )
 
 # Provider-specific options
-response = RailsLlmClient.generate(
+response = LlmConductor.generate(
   model: 'meta-llama/llama-2-70b-chat',
   vendor: :openrouter,
   prompt: 'Hello world',
@@ -297,17 +297,17 @@ The gem provides comprehensive error handling with automatic retries for transie
 
 ```ruby
 begin
-  response = RailsLlmClient.generate(
+  response = LlmConductor.generate(
     model: 'gpt-4',
     prompt: 'Analyze this...'
   )
-rescue RailsLlmClient::ConfigurationError => e
+rescue LlmConductor::ConfigurationError => e
   # Handle configuration issues
   Rails.logger.error "LLM Configuration Error: #{e.message}"
-rescue RailsLlmClient::ClientError => e
+rescue LlmConductor::ClientError => e
   # Handle API errors, timeouts, etc.
   Rails.logger.error "LLM Client Error: #{e.message}"
-rescue RailsLlmClient::TokenLimitError => e
+rescue LlmConductor::TokenLimitError => e
   # Handle token limit exceeded
   Rails.logger.error "Token limit exceeded: #{e.message}"
 end
@@ -318,7 +318,7 @@ end
 The `Response` object provides rich information about the generation:
 
 ```ruby
-response = RailsLlmClient.generate(model: 'gpt-4', prompt: 'Hello')
+response = LlmConductor.generate(model: 'gpt-4', prompt: 'Hello')
 
 response.output          # Generated text
 response.input           # Original prompt
@@ -348,8 +348,8 @@ The gem provides testing utilities:
 RSpec.configure do |config|
   config.before(:each) do
     # Mock LLM responses in tests
-    allow(RailsLlmClient).to receive(:generate).and_return(
-      RailsLlmClient::Response.new(
+    allow(LlmConductor).to receive(:generate).and_return(
+      LlmConductor::Response.new(
         input: 'test prompt',
         output: 'test response',
         input_tokens: 10,
@@ -381,7 +381,7 @@ def prompt_summarize_description(data)
 end
 
 # After (register with PromptManager)
-RailsLlmClient::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
+LlmConductor::PromptManager.register(:summarize_description, CompanyAnalysisPrompt)
 ```
 
 3. **Update data building:**
@@ -390,7 +390,7 @@ RailsLlmClient::PromptManager.register(:summarize_description, CompanyAnalysisPr
 data = CompanyDataBuilder.new(company).build
 
 # After
-data = RailsLlmClient::DataBuilders::CompanyDataBuilder.new(company).build
+data = LlmConductor::DataBuilders::CompanyDataBuilder.new(company).build
 ```
 
 ## Contributing
