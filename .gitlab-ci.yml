@@ -33,31 +33,21 @@ rspec:
     - bundle exec rspec
   coverage: '/\(\d+\.\d+\%\) covered/'
   artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/coverage.xml
     paths:
       - coverage/
     expire_in: 30 days
-  only:
-    - branches
-    - merge_requests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_REF_NAME == "main"
 
 # Code quality with RuboCop
 rubocop:
   stage: test
   script:
-    - bundle exec rubocop --format json --out rubocop-report.json
-  artifacts:
-    reports:
-      codequality: rubocop-report.json
-    paths:
-      - rubocop-report.json
-    expire_in: 30 days
-  only:
-    - branches
-    - merge_requests
+    - bundle exec rubocop
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_REF_NAME == "main"
 
 # Build gem
 build_gem:

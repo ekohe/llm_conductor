@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-# Coverage reporting for GitLab CI
+# Coverage reporting
 if ENV['CI']
   require 'simplecov'
-  require 'simplecov-cobertura'
-  
-  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   
   SimpleCov.start do
     add_filter '/spec/'
