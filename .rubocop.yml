@@ -1,5 +1,6 @@
 # RuboCop configuration for GitLab CI
 require:
+  - rubocop-rake
   - rubocop-rspec
 
 inherit_from: ~
