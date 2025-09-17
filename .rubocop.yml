@@ -82,10 +82,6 @@ RSpec/LeakyConstantDeclaration:
 RSpec/DescribeMethod:
   Enabled: false
 
-# Disable Capybara cop
-Capybara/RSpec/PredicateMatcher:
-  Enabled: false
-
 # Disable Ruby version mismatch warning
 Gemspec/RequiredRubyVersion:
   Enabled: false
