@@ -1,16 +1,5 @@
 # frozen_string_literal: true
 
-# Coverage reporting
-if ENV['CI']
-  require 'simplecov'
-
-  SimpleCov.start do
-    add_filter '/spec/'
-    add_filter '/vendor/'
-    track_files 'lib/**/*.rb'
-  end
-end
-
 require 'active_support'
 require 'active_support/time'
 require 'active_support/time_with_zone'
