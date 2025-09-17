@@ -1,10 +1,12 @@
 # RuboCop configuration for GitLab CI
 require:
-  - rubocop-rspec
+  - rubocop-capybara
+  - rubocop-factory_bot
 
 plugins:
   - rubocop-performance
   - rubocop-rake
+  - rubocop-rspec
 
 inherit_from: .rubocop_todo.yml
 
@@ -95,3 +97,8 @@ Metrics/BlockLength:
 
 Layout/LineLength:
   Max: 120
+
+# Performance cops (from .rubocop_todo.yml)
+Performance/RedundantEqualityComparisonBlock:
+  Exclude:
+    - 'spec/llm_conductor/performance_spec.rb'
