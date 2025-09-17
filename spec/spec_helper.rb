@@ -5,10 +5,7 @@ if ENV['CI']
   require 'simplecov'
   require 'simplecov-cobertura'
   
-  SimpleCov.formatters = [
-    SimpleCov::Formatter::HTMLFormatter,
-    SimpleCov::Formatter::CoberturaFormatter
-  ]
+  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   
   SimpleCov.start do
     add_filter '/spec/'
