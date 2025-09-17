@@ -14,6 +14,9 @@ AllCops:
   TargetRubyVersion: 3.4.1
   NewCops: disable
   SuggestExtensions: false
+  Exclude:
+    - 'cache/**/*'
+    - 'vendor/**/*'
   
 
 Style/StringLiterals:
