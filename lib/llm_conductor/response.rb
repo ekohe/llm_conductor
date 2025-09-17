@@ -1,78 +1,86 @@
 # frozen_string_literal: true
 
 module LlmConductor
+  # Response object that encapsulates the result of LLM generation
+  # with metadata like token usage and cost information
   class Response
-    attr_reader :input, :output, :input_tokens, :output_tokens, :model, :vendor, :metadata
+    attr_reader :output, :input_tokens, :output_tokens, :metadata, :model
 
-    def initialize(input:, output:, input_tokens: 0, output_tokens: 0, model: nil, vendor: nil, metadata: {})
-      @input = input
+    def initialize(output:, model:, input_tokens: nil, output_tokens: nil, metadata: {})
       @output = output
-      @input_tokens = input_tokens.to_i
-      @output_tokens = output_tokens.to_i
       @model = model
-      @vendor = vendor
+      @input_tokens = input_tokens
+      @output_tokens = output_tokens
       @metadata = metadata || {}
     end
 
     def total_tokens
-      input_tokens + output_tokens
+      (@input_tokens || 0) + (@output_tokens || 0)
     end
 
+    # Calculate estimated cost based on model and token usage
+    def estimated_cost
+      return nil unless valid_for_cost_calculation?
+
+      pricing = model_pricing
+      return nil unless pricing
+
+      calculate_cost(pricing[:input_rate], pricing[:output_rate])
+    end
+
+    # Check if the response was successful
     def success?
-      !output.nil? && !output.to_s.strip.empty?
+      !@output.nil? && !@output.empty? && @metadata[:error].nil?
     end
 
-    def to_h
-      {
-        input: input,
-        output: output,
-        input_tokens: input_tokens,
-        output_tokens: output_tokens,
-        total_tokens: total_tokens,
-        model: model,
-        vendor: vendor,
-        metadata: metadata,
-        success: success?
-      }
+    # Get metadata with cost included if available
+    def metadata_with_cost
+      cost = estimated_cost
+      cost ? @metadata.merge(cost:) : @metadata
     end
 
-    def to_json(*args)
-      to_h.to_json(*args)
-    end
-
-    # Convenience methods for common output parsing
+    # Parse JSON from the output
     def parse_json
-      return nil unless output
-      
-      # Try to extract JSON from markdown code blocks first
-      json_match = output.match(/```(?:json)?\s*(\{.*\})\s*```/m)
-      json_string = json_match ? json_match[1] : output
-      
-      # Try to find JSON within other text
-      if json_string == output && !json_string.strip.start_with?('{')
-        json_match = output.match(/\{.*\}/m)
-        json_string = json_match[0] if json_match
-      end
-      
-      JSON.parse(json_string) if json_string
-    rescue JSON::ParserError
-      nil
+      return nil unless success? && @output
+
+      JSON.parse(@output.strip)
+    rescue JSON::ParserError => e
+      raise JSON::ParserError, "Failed to parse JSON response: #{e.message}"
     end
 
-    def extract_urls
-      return [] unless output
-      
-      output.scan(/https?:\/\/[^\s\]"']+/)
+    # Extract text between code blocks
+    def extract_code_block(language = nil)
+      return nil unless @output
+
+      pattern = if language
+                  /```#{Regexp.escape(language)}\s*(.*?)```/m
+                else
+                  /```(?:\w*)\s*(.*?)```/m
+                end
+
+      match = @output.match(pattern)
+      match ? match[1].strip : nil
     end
 
-    def extract_code_blocks(language = nil)
-      return [] unless output
-      
-      if language
-        output.scan(/```#{language}\s*(.*?)```/m).flatten
-      else
-        output.scan(/```(?:\w+)?\s*(.*?)```/m).flatten
+    private
+
+    def valid_for_cost_calculation?
+      @model && total_tokens.positive?
+    end
+
+    def model_pricing
+      case @model
+      when /gpt-3\.5-turbo/
+        { input_rate: 0.0000015, output_rate: 0.000002 }
+      when /gpt-4o-mini/
+        { input_rate: 0.000000150, output_rate: 0.0000006 }
+      when /gpt-4/
+        { input_rate: 0.00003, output_rate: 0.00006 }
       end
+    end
+
+    def calculate_cost(input_rate, output_rate)
+      (@input_tokens || 0) * input_rate + (@output_tokens || 0) * output_rate
     end
   end
 end

@@ -1,49 +1,23 @@
 # frozen_string_literal: true
 
-require 'ollama-ai'
-
 module LlmConductor
   module Clients
+    # Ollama client implementation for accessing local or self-hosted Ollama models
     class OllamaClient < BaseClient
       private
 
       def generate_content(prompt)
-        response = client.generate(
-          model: model,
-          prompt: prompt.to_s,
-          stream: false,
-          options: {
-            temperature: options[:temperature],
-            top_p: options[:top_p],
-            top_k: options[:top_k],
-            num_predict: options[:max_tokens]
-          }.compact
-        )
-
-        # Ollama returns an array of responses
-        response.first['response'] if response.is_a?(Array) && response.any?
+        client.generate({ model:, prompt:, stream: false }).first['response']
       end
 
-      def stream_content(prompt, &block)
-        client.generate(
-          model: model,
-          prompt: prompt.to_s,
-          stream: true
-        ) do |chunk|
-          block.call(chunk) if chunk && chunk['response']
+      def client
+        @client ||= begin
+          config = LlmConductor.configuration.provider_config(:ollama)
+          Ollama.new(
+            credentials: { address: config[:base_url] },
+            options: { server_sent_events: true }
+          )
         end
-      end
-
-      def build_client
-        config = provider_config
-        
-        Ollama.new(
-          credentials: { address: config[:base_url] },
-          options: { 
-            server_sent_events: true,
-            timeout: configuration.timeout
-          }
-        )
       end
     end
   end
