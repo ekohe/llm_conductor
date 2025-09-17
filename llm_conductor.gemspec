@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.summary = 'Orchestrate multiple LLM services in Rails applications'
   spec.homepage = 'https://github.com/ben/llm_conductor'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.7.0'
+  spec.required_ruby_version = '>= 3.4.1'
   
   spec.files = Dir['lib/**/*', 'README.md']
   spec.require_paths = ['lib']

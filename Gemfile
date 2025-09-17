@@ -2,6 +2,8 @@
 
 source "https://rubygems.org"
 
+ruby file: ".ruby-version"
+
 # Specify your gem's dependencies in llm_conductor.gemspec
 gemspec
 
