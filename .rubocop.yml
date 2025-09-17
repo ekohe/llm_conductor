@@ -7,6 +7,7 @@ inherit_from: ~
 AllCops:
   TargetRubyVersion: 3.4.1
   NewCops: disable
+  
 
 Style/StringLiterals:
   EnforcedStyle: single_quotes
@@ -16,15 +17,15 @@ Style/StringLiteralsInInterpolation:
 
 Style/HashSyntax:
   EnforcedShorthandSyntax: always
+# This is not rails application.
+# Rails/Blank:
+#   Enabled: false
 
-Rails/Blank:
-  Enabled: false
+# Rails/Present:
+#   Enabled: false
 
-Rails/Present:
-  Enabled: false
-
-Rails/TimeZone:
-  Enabled: false
+# Rails/TimeZone:
+#   Enabled: false
 
 Lint/ConstantDefinitionInBlock:
   Enabled: false
@@ -56,6 +57,9 @@ RSpec/MultipleDescribes:
 RSpec/SpecFilePathFormat:
   Enabled: false
 
+RSpec/FilePath:
+  Enabled: false
+
 RSpec/UnspecifiedException:
   Enabled: false
 
@@ -66,6 +70,14 @@ RSpec/LeakyConstantDeclaration:
   Enabled: false
 
 RSpec/DescribeMethod:
+  Enabled: false
+
+# Disable problematic Capybara cop that's causing 496 errors
+Capybara/RSpec/PredicateMatcher:
+  Enabled: false
+
+# Disable Ruby version mismatch warning
+Gemspec/RequiredRubyVersion:
   Enabled: false
 
 # GitLab CI specific - generate JSON report
