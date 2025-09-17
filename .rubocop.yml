@@ -1,0 +1,103 @@
+# RuboCop configuration for GitLab CI
+plugins:
+  - rubocop-performance
+  - rubocop-rake
+
+require: 
+  - rubocop-capybara
+  - rubocop-factory_bot
+  - rubocop-rspec
+
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 3.4.1
+  NewCops: disable
+  SuggestExtensions: false
+  Exclude:
+    - 'cache/**/*'
+    - 'vendor/**/*'
+  
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: single_quotes
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: always
+# This is not rails application.
+# Rails/Blank:
+#   Enabled: false
+
+# Rails/Present:
+#   Enabled: false
+
+# Rails/TimeZone:
+#   Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 15
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/ContextWording:
+  Enabled: false
+
+RSpec/DescribeClass:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/FilePath:
+  Enabled: false
+
+RSpec/UnspecifiedException:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+
+RSpec/DescribeMethod:
+  Enabled: false
+
+# Disable Ruby version mismatch warning
+Gemspec/RequiredRubyVersion:
+  Enabled: false
+
+# GitLab CI specific - generate JSON report
+Style/Documentation:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - '*.gemspec'
+
+Layout/LineLength:
+  Max: 120
+
+# Performance cops (from .rubocop_todo.yml)
+Performance/RedundantEqualityComparisonBlock:
+  Exclude:
+    - 'spec/llm_conductor/performance_spec.rb'

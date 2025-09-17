@@ -1,77 +1,102 @@
 # frozen_string_literal: true
 
+require 'spec_helper'
+
 RSpec.describe LlmConductor do
-  it 'has a version number' do
-    expect(LlmConductor::VERSION).not_to be nil
-  end
+  describe 'module constants' do
+    it 'has a version number' do
+      expect(described_class::VERSION).not_to be_nil
+      expect(described_class::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
+    end
 
-  describe '.configuration' do
-    it 'returns a Configuration instance' do
-      expect(LlmConductor.configuration).to be_a(LlmConductor::Configuration)
+    it 'defines supported vendors' do
+      expect(described_class::SUPPORTED_VENDORS).to eq(%i[openai openrouter ollama])
+    end
+
+    it 'defines supported prompt types' do
+      expect(described_class::SUPPORTED_PROMPT_TYPES).to eq(%i[
+                                                              featured_links
+                                                              summarize_htmls
+                                                              summarize_description
+                                                              custom
+                                                            ])
     end
   end
 
-  describe '.configure' do
-    it 'yields the configuration' do
-      expect { |b| LlmConductor.configure(&b) }.to yield_with_args(LlmConductor.configuration)
+  describe '.build_client' do
+    let(:model) { 'gpt-4o-mini' }
+    let(:type) { :summarize_description }
+
+    it 'returns a BaseClient instance' do
+      client = described_class.build_client(model:, type:)
+      expect(client).to be_a(LlmConductor::Clients::BaseClient)
     end
 
-    it 'allows setting configuration options' do
-      LlmConductor.configure do |config|
-        config.default_model = 'test-model'
-        config.timeout = 60
-      end
+    it 'delegates to ClientFactory.build' do
+      allow(LlmConductor::ClientFactory).to receive(:build)
 
-      expect(LlmConductor.configuration.default_model).to eq('test-model')
-      expect(LlmConductor.configuration.timeout).to eq(60)
-    end
-  end
+      described_class.build_client(model:, type:, vendor: :openai)
 
-  describe '.client' do
-    it 'creates a client through ClientFactory' do
-      expect(LlmConductor::ClientFactory).to receive(:build).with(
-        model: 'gpt-3.5-turbo',
-        type: nil,
-        vendor: nil,
-        configuration: LlmConductor.configuration
+      expect(LlmConductor::ClientFactory).to have_received(:build).with(
+        model:, type:, vendor: :openai
       )
+    end
 
-      LlmConductor.client(model: 'gpt-3.5-turbo')
+    it 'passes all parameters to ClientFactory' do
+      allow(LlmConductor::ClientFactory).to receive(:build)
+
+      described_class.build_client(model: 'custom-model', type: :custom, vendor: :openrouter)
+
+      expect(LlmConductor::ClientFactory).to have_received(:build).with(
+        model: 'custom-model', type: :custom, vendor: :openrouter
+      )
     end
   end
 
   describe '.generate' do
-    let(:mock_client) { double('client') }
-    let(:mock_response) { double('response') }
+    let(:model) { 'gpt-4o-mini' }
+    let(:type) { :summarize_description }
+    let(:data) { { name: 'TestCorp' } }
+    let(:mock_client) { double('Client') }
+    let(:expected_result) { { output: 'Generated content', input_tokens: 10, output_tokens: 5 } }
 
     before do
-      allow(LlmConductor).to receive(:client).and_return(mock_client)
+      allow(described_class).to receive(:build_client).and_return(mock_client)
+      allow(mock_client).to receive(:generate).and_return(expected_result)
     end
 
-    context 'with prompt' do
-      it 'calls generate_from_prompt on the client' do
-        expect(mock_client).to receive(:generate_from_prompt).with(prompt: 'test prompt').and_return(mock_response)
+    it 'builds a client and generates content' do
+      result = described_class.generate(model:, type:, data:)
 
-        result = LlmConductor.generate(model: 'gpt-3.5-turbo', prompt: 'test prompt')
-        expect(result).to eq(mock_response)
-      end
+      expect(described_class).to have_received(:build_client).with(model:, type:, vendor: nil)
+      expect(mock_client).to have_received(:generate).with(data:)
+      expect(result).to eq(expected_result)
     end
 
-    context 'with data and type' do
-      it 'calls generate on the client' do
-        expect(mock_client).to receive(:generate).with(data: { test: 'data' }).and_return(mock_response)
+    it 'passes vendor parameter when provided' do
+      described_class.generate(model:, type:, data:, vendor: :openrouter)
 
-        result = LlmConductor.generate(model: 'gpt-3.5-turbo', data: { test: 'data' }, type: :test)
-        expect(result).to eq(mock_response)
-      end
+      expect(described_class).to have_received(:build_client).with(
+        model:, type:, vendor: :openrouter
+      )
     end
 
-    context 'without prompt or data+type' do
-      it 'raises ArgumentError' do
-        expect {
-          LlmConductor.generate(model: 'gpt-3.5-turbo')
-        }.to raise_error(ArgumentError, 'Either prompt or (data + type) must be provided')
-      end
+    it 'returns the generated result directly' do
+      result = described_class.generate(model:, type:, data:)
+
+      expect(result).to eq(expected_result)
+    end
+  end
+
+  describe 'error handling' do
+    it 'defines Error as a StandardError subclass' do
+      expect(described_class::Error).to be < StandardError
+    end
+
+    it 'allows raising custom errors' do
+      expect { raise described_class::Error, 'Test error' }.to raise_error(
+        described_class::Error, 'Test error'
+      )
     end
   end
 end

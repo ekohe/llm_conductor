@@ -3,6 +3,9 @@ PATH
   specs:
     llm_conductor (0.1.0)
       activesupport (>= 6.0)
+      ollama-ai (~> 1.3)
+      ruby-openai (~> 7.0)
+      tiktoken_ruby (~> 0.0.7)
 
 GEM
   remote: https://rubygems.org/
@@ -23,45 +26,55 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     benchmark (0.4.1)
-    bigdecimal (3.2.2)
+    bigdecimal (3.2.3)
     concurrent-ruby (1.3.5)
-    connection_pool (2.5.3)
-    date (3.4.1)
+    connection_pool (2.5.4)
     diff-lcs (1.6.2)
+    docile (1.4.1)
     drb (2.2.3)
-    erb (5.0.2)
+    ethon (0.15.0)
+      ffi (>= 1.15.0)
+    event_stream_parser (1.0.0)
+    faraday (2.13.4)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-multipart (1.1.1)
+      multipart-post (~> 2.0)
+    faraday-net_http (3.4.1)
+      net-http (>= 0.5.0)
+    faraday-typhoeus (1.1.0)
+      faraday (~> 2.0)
+      typhoeus (~> 1.4)
+    ffi (1.17.2-aarch64-linux-gnu)
+    ffi (1.17.2-aarch64-linux-musl)
+    ffi (1.17.2-arm64-darwin)
+    ffi (1.17.2-x86_64-darwin)
+    ffi (1.17.2-x86_64-linux-gnu)
+    ffi (1.17.2-x86_64-linux-musl)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
-    io-console (0.8.1)
-    irb (1.15.2)
-      pp (>= 0.6.0)
-      rdoc (>= 4.0.0)
-      reline (>= 0.4.2)
     json (2.13.2)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
     minitest (5.25.5)
+    multipart-post (2.4.1)
+    net-http (0.6.0)
+      uri
+    ollama-ai (1.3.0)
+      faraday (~> 2.10)
+      faraday-typhoeus (~> 1.1)
+      typhoeus (~> 1.4, >= 1.4.1)
     parallel (1.27.0)
     parser (3.3.9.0)
       ast (~> 2.4.1)
       racc
-    pp (0.6.2)
-      prettyprint
-    prettyprint (0.2.0)
-    prism (1.4.0)
-    psych (5.2.6)
-      date
-      stringio
+    prism (1.5.1)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.0)
-    rdoc (6.14.2)
-      erb
-      psych (>= 4.0.0)
-    regexp_parser (2.11.2)
-    reline (0.6.2)
-      io-console (~> 0.5)
+    regexp_parser (2.11.3)
     rspec (3.13.1)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -75,7 +88,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.5)
-    rubocop (1.79.2)
+    rubocop (1.80.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -89,26 +102,73 @@ GEM
     rubocop-ast (1.46.0)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
+    rubocop-capybara (2.22.1)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
+    rubocop-factory_bot (2.27.1)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
+    rubocop-performance (1.26.0)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.44.0, < 2.0)
+    rubocop-rake (0.7.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.72.1)
+    rubocop-rspec (2.31.0)
+      rubocop (~> 1.40)
+      rubocop-capybara (~> 2.17)
+      rubocop-factory_bot (~> 2.22)
+      rubocop-rspec_rails (~> 2.28)
+    rubocop-rspec_rails (2.29.1)
+      rubocop (~> 1.61)
+    ruby-openai (7.4.0)
+      event_stream_parser (>= 0.3.0, < 2.0.0)
+      faraday (>= 1)
+      faraday-multipart (>= 1)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
-    stringio (3.1.7)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.13.2)
+    simplecov_json_formatter (0.1.4)
+    tiktoken_ruby (0.0.12-aarch64-linux)
+    tiktoken_ruby (0.0.12-arm64-darwin)
+    tiktoken_ruby (0.0.12-x86_64-darwin)
+    tiktoken_ruby (0.0.12-x86_64-linux)
+    tiktoken_ruby (0.0.12-x86_64-linux-musl)
+    typhoeus (1.5.0)
+      ethon (>= 0.9.0, < 0.16.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    unicode-display_width (3.1.5)
-      unicode-emoji (~> 4.0, >= 4.0.4)
-    unicode-emoji (4.0.4)
+    unicode-display_width (3.2.0)
+      unicode-emoji (~> 4.1)
+    unicode-emoji (4.1.0)
     uri (1.0.3)
 
 PLATFORMS
-  arm64-darwin-24
-  ruby
+  aarch64-linux
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm64-darwin
+  x86_64-darwin
+  x86_64-linux
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
-  irb
   llm_conductor!
   rake (~> 13.0)
   rspec (~> 3.0)
   rubocop (~> 1.21)
+  rubocop-capybara (~> 2.0)
+  rubocop-factory_bot (~> 2.0)
+  rubocop-performance (~> 1.19)
+  rubocop-rake (~> 0.6)
+  rubocop-rspec (~> 2.0)
+  simplecov (~> 0.22)
 
 BUNDLED WITH
    2.6.7

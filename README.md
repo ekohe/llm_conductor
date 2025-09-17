@@ -1,56 +1,420 @@
 # LLM Conductor
 
-🎼 **Orchestrate multiple LLM services in your Rails applications**
+A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, OpenRouter, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
-LLM Conductor is a Ruby gem that provides a unified interface for working with multiple Large Language Model (LLM) services like OpenAI, Ollama, and OpenRouter. It abstracts away the complexity of different APIs and provides a consistent, Rails-friendly way to integrate AI capabilities into your applications.
+## Features
 
-Welcome to LLM Conductor! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/llm_conductor`. To experiment with that code, run `bin/console` for an interactive prompt.
+🚀 **Multi-Provider Support** - OpenAI GPT, OpenRouter, and Ollama with automatic vendor detection  
+🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
+📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
+🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
+⚡ **Smart Configuration** - Rails-style configuration with environment variable support  
+💰 **Cost Tracking** - Automatic token counting and cost estimation  
+🔧 **Extensible Architecture** - Easy to add new providers and prompt types  
+🛡️ **Robust Error Handling** - Comprehensive error handling with detailed metadata  
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add llm_conductor
-```
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install llm_conductor
-```
-
-## Usage
+Add this line to your application's Gemfile:
 
 ```ruby
-require 'llm_conductor'
+gem 'llm_conductor'
+```
 
-# Configure the gem
-LlmConductor.configure do |config|
-  config.openai_api_key = 'your-openai-key'
-  config.default_model = 'gpt-3.5-turbo'
-end
+And then execute:
 
-# Generate text
+```bash
+$ bundle install
+```
+
+Or install it yourself as:
+
+```bash
+$ gem install llm_conductor
+```
+
+## Quick Start
+
+### 1. Simple Text Generation
+
+```ruby
+# Direct prompt generation - easiest way to get started
 response = LlmConductor.generate(
-  model: 'gpt-3.5-turbo',
-  prompt: 'Write a short story about a robot'
+  model: 'gpt-4o-mini',
+  prompt: 'Explain quantum computing in simple terms'
 )
 
-puts response.content
+puts response.output           # The generated text
+puts response.total_tokens     # Token usage
+puts response.estimated_cost   # Cost in USD
 ```
+
+### 2. Template-Based Generation
+
+```ruby
+# Use built-in templates with structured data
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini',
+  type: :summarize_description,
+  data: {
+    name: 'TechCorp',
+    domain_name: 'techcorp.com', 
+    description: 'An AI company specializing in...'
+  }
+)
+
+# Response object provides rich information
+if response.success?
+  puts "Generated: #{response.output}"
+  puts "Tokens: #{response.total_tokens}"
+  puts "Cost: $#{response.estimated_cost}"
+else
+  puts "Error: #{response.metadata[:error]}"
+end
+```
+
+## Configuration
+
+### Rails-Style Configuration
+
+Create `config/initializers/llm_conductor.rb` (Rails) or configure in your application:
+
+```ruby
+LlmConductor.configure do |config|
+  # Default settings
+  config.default_model = 'gpt-4o-mini'
+  config.default_vendor = :openai
+  config.timeout = 30
+  config.max_retries = 3
+  config.retry_delay = 1.0
+
+  # Provider configurations
+  config.openai(
+    api_key: ENV['OPENAI_API_KEY'],
+    organization: ENV['OPENAI_ORG_ID'] # Optional
+  )
+
+  config.openrouter(
+    api_key: ENV['OPENROUTER_API_KEY']
+  )
+
+  config.ollama(
+    base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
+  )
+end
+```
+
+### Environment Variables
+
+The gem automatically detects these environment variables:
+
+- `OPENAI_API_KEY` - OpenAI API key
+- `OPENAI_ORG_ID` - OpenAI organization ID (optional)
+- `OPENROUTER_API_KEY` - OpenRouter API key  
+- `OLLAMA_ADDRESS` - Ollama server address
+
+## Supported Providers & Models
+
+### OpenAI (Automatic for GPT models)
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini',  # Auto-detects OpenAI
+  prompt: 'Your prompt here'
+)
+```
+
+### OpenRouter (Explicit vendor needed)
+```ruby
+response = LlmConductor.generate(
+  model: 'meta-llama/llama-3.2-90b-vision-instruct',
+  vendor: :openrouter,  # Required for non-GPT models on OpenRouter
+  prompt: 'Your prompt here'
+)
+```
+
+### Ollama (Default for non-GPT models)
+```ruby
+response = LlmConductor.generate(
+  model: 'llama3.2',  # Auto-detects Ollama for non-GPT models
+  prompt: 'Your prompt here'
+)
+```
+
+## Advanced Features
+
+### 1. Custom Prompt Registration
+
+Create reusable, testable prompt classes:
+
+```ruby
+class CompanyAnalysisPrompt < LlmConductor::Prompts::BasePrompt
+  def render
+    <<~PROMPT
+      Company: #{name}
+      Domain: #{domain_name}
+      Description: #{truncate_text(description, max_length: 1000)}
+
+      Please analyze this company and provide:
+      1. Core business model
+      2. Target market 
+      3. Competitive advantages
+      4. Growth potential
+
+      Format as JSON.
+    PROMPT
+  end
+end
+
+# Register the prompt
+LlmConductor::PromptManager.register(:detailed_analysis, CompanyAnalysisPrompt)
+
+# Use the registered prompt
+response = LlmConductor.generate(
+  model: 'gpt-4',
+  type: :detailed_analysis,
+  data: {
+    name: 'TechCorp',
+    domain_name: 'techcorp.com',
+    description: 'A leading AI company...'
+  }
+)
+
+# Parse structured responses
+analysis = response.parse_json
+puts analysis['business_model']
+```
+
+### 2. Data Builder Pattern
+
+Structure complex data for LLM consumption:
+
+```ruby
+class CompanyDataBuilder < LlmConductor::DataBuilder
+  def build
+    {
+      id: source_object.id,
+      name: source_object.name,
+      description: format_for_llm(source_object.description, max_length: 500),
+      industry: extract_nested_data(:data, 'categories', 'primary'),
+      metrics: build_metrics,
+      summary: build_company_summary
+    }
+  end
+
+  private
+
+  def build_metrics
+    {
+      employees: format_number(source_object.employee_count),
+      revenue: format_currency(source_object.annual_revenue),
+      growth_rate: "#{source_object.growth_rate}%"
+    }
+  end
+
+  def build_company_summary
+    name = safe_extract(:name, default: 'Company')
+    industry = extract_nested_data(:data, 'categories', 'primary')
+    "#{name} is a #{industry} company..."
+  end
+end
+
+# Usage
+company = Company.find(123)
+data = CompanyDataBuilder.new(company).build
+
+response = LlmConductor.generate(
+  model: 'gpt-4',
+  type: :detailed_analysis, 
+  data: data
+)
+```
+
+### 3. Built-in Prompt Templates
+
+#### Featured Links Extraction
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini',
+  type: :featured_links,
+  data: {
+    htmls: '<html>...</html>',
+    current_url: 'https://example.com'
+  }
+)
+```
+
+#### HTML Summarization
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini', 
+  type: :summarize_htmls,
+  data: { htmls: '<html>...</html>' }
+)
+```
+
+#### Description Summarization
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini',
+  type: :summarize_description,
+  data: {
+    name: 'Company Name',
+    description: 'Long description...',
+    industries: ['Tech', 'AI']
+  }
+)
+```
+
+#### Custom Templates
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4o-mini',
+  type: :custom,
+  data: {
+    template: "Analyze this data: %{data}",
+    data: "Your data here"
+  }
+)
+```
+
+### 4. Response Object
+
+All methods return a rich `LlmConductor::Response` object:
+
+```ruby
+response = LlmConductor.generate(...)
+
+# Main content
+response.output           # Generated text
+response.success?         # Boolean success status
+
+# Token information
+response.input_tokens     # Input tokens used
+response.output_tokens    # Output tokens generated  
+response.total_tokens     # Total tokens
+
+# Cost tracking (for supported models)
+response.estimated_cost   # Estimated cost in USD
+
+# Metadata
+response.model           # Model used
+response.metadata        # Hash with vendor, timestamp, etc.
+
+# Structured data parsing
+response.parse_json                    # Parse as JSON
+response.extract_code_block('json')    # Extract code blocks
+```
+
+### 5. Error Handling
+
+The gem provides comprehensive error handling:
+
+```ruby
+response = LlmConductor.generate(
+  model: 'gpt-4',
+  prompt: 'Your prompt'
+)
+
+if response.success?
+  puts response.output
+else
+  puts "Error: #{response.metadata[:error]}"
+  puts "Failed model: #{response.model}"
+end
+
+# Exception handling for critical errors
+begin
+  response = LlmConductor.generate(...)
+rescue LlmConductor::Error => e
+  puts "LLM Conductor error: #{e.message}"
+rescue StandardError => e
+  puts "General error: #{e.message}" 
+end
+```
+
+## Extending the Gem
+
+### Adding Custom Clients
+
+```ruby
+module LlmConductor
+  module Clients
+    class CustomClient < BaseClient
+      private
+
+      def generate_content(prompt)
+        # Implement your provider's API call
+        your_custom_api.generate(prompt)
+      end
+    end
+  end
+end
+```
+
+### Adding Prompt Types
+
+```ruby
+module LlmConductor
+  module Prompts
+    def prompt_custom_analysis(data)
+      <<~PROMPT
+        Custom analysis for: #{data[:subject]}
+        Context: #{data[:context]}
+        
+        Please provide detailed analysis.
+      PROMPT
+    end
+  end
+end
+```
+
+## Examples
+
+Check the `/examples` directory for comprehensive usage examples:
+
+- `simple_usage.rb` - Basic text generation
+- `prompt_registration.rb` - Custom prompt classes
+- `data_builder_usage.rb` - Data structuring patterns
+- `rag_usage.rb` - RAG implementation examples
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+# Install dependencies
+bin/setup
+
+# Run tests 
+rake spec
+
+# Run RuboCop
+rubocop
+
+# Interactive console
+bin/console
+```
+
+## Testing
+
+The gem includes comprehensive test coverage with unit, integration, and performance tests. See `spec/TESTING_GUIDE.md` for detailed testing information.
+
+## Performance
+
+- **Token Efficiency**: Automatic prompt optimization and token counting
+- **Cost Tracking**: Real-time cost estimation for all supported models
+- **Response Caching**: Built-in mechanisms to avoid redundant API calls
+- **Async Support**: Ready for async/background processing
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/llm_conductor. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/llm_conductor/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/ekohe/llm_conductor.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
 
 ## License
 
@@ -58,4 +422,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the LlmConductor project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/llm_conductor/blob/main/CODE_OF_CONDUCT.md).
+This project is intended to be a safe, welcoming space for collaboration. Contributors are expected to adhere to the [code of conduct](https://github.com/ekohe/llm_conductor/blob/main/CODE_OF_CONDUCT.md).
