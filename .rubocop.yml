@@ -1,11 +1,11 @@
 # RuboCop configuration for GitLab CI
-require:
-  - rubocop-capybara
-  - rubocop-factory_bot
-
 plugins:
   - rubocop-performance
   - rubocop-rake
+
+require: 
+  - rubocop-capybara
+  - rubocop-factory_bot
   - rubocop-rspec
 
 inherit_from: .rubocop_todo.yml
@@ -79,7 +79,7 @@ RSpec/LeakyConstantDeclaration:
 RSpec/DescribeMethod:
   Enabled: false
 
-# Disable problematic Capybara cop that's causing 496 errors
+# Disable Capybara cop
 Capybara/RSpec/PredicateMatcher:
   Enabled: false
 
