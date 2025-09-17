@@ -1,13 +1,16 @@
 # RuboCop configuration for GitLab CI
 require:
-  - rubocop-rake
   - rubocop-rspec
 
-inherit_from: ~
+plugins:
+  - rubocop-rake
+
+inherit_from: .rubocop_todo.yml
 
 AllCops:
   TargetRubyVersion: 3.4.1
   NewCops: disable
+  SuggestExtensions: false
   
 
 Style/StringLiterals:
