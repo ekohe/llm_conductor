@@ -95,21 +95,21 @@ test_gem_install:
     - if: $CI_COMMIT_TAG
 
 # Deploy to RubyGems (only on tags)
-deploy_rubygems:
-  stage: deploy
-  cache:
-    <<: *global_cache
-    policy: pull
-  dependencies:
-    - build_gem
-  script:
-    - mkdir -p ~/.gem
-    - echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" > ~/.gem/credentials
-    - chmod 600 ~/.gem/credentials
-    - gem push pkg/*.gem
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
-  environment:
-    name: production
-    url: https://rubygems.org/gems/llm_conductor
+# deploy_rubygems:
+#   stage: deploy
+#   cache:
+#     <<: *global_cache
+#     policy: pull
+#   dependencies:
+#     - build_gem
+#   script:
+#     - mkdir -p ~/.gem
+#     - echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" > ~/.gem/credentials
+#     - chmod 600 ~/.gem/credentials
+#     - gem push pkg/*.gem
+#   rules:
+#     - if: $CI_COMMIT_TAG
+#       when: manual
+#   environment:
+#     name: production
+#     url: https://rubygems.org/gems/llm_conductor

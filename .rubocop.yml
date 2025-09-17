@@ -2,14 +2,71 @@
 require:
   - rubocop-rspec
 
+inherit_from: ~
+
 AllCops:
   TargetRubyVersion: 3.4.1
-  NewCops: enable
-  Exclude:
-    - 'bin/**/*'
-    - 'vendor/**/*'
-    - 'pkg/**/*'
-    - 'spec/spec_helper.rb'
+  NewCops: disable
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: single_quotes
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: always
+
+Rails/Blank:
+  Enabled: false
+
+Rails/Present:
+  Enabled: false
+
+Rails/TimeZone:
+  Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 15
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/ContextWording:
+  Enabled: false
+
+RSpec/DescribeClass:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/UnspecifiedException:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+
+RSpec/DescribeMethod:
+  Enabled: false
 
 # GitLab CI specific - generate JSON report
 Style/Documentation:
@@ -17,7 +74,6 @@ Style/Documentation:
 
 Metrics/BlockLength:
   Exclude:
-    - 'spec/**/*'
     - '*.gemspec'
 
 Layout/LineLength:
