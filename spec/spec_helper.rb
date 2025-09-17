@@ -1,5 +1,22 @@
 # frozen_string_literal: true
 
+# Coverage reporting for GitLab CI
+if ENV['CI']
+  require 'simplecov'
+  require 'simplecov-cobertura'
+  
+  SimpleCov.formatters = [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::CoberturaFormatter
+  ]
+  
+  SimpleCov.start do
+    add_filter '/spec/'
+    add_filter '/vendor/'
+    track_files 'lib/**/*.rb'
+  end
+end
+
 require 'active_support'
 require 'active_support/time'
 require 'active_support/time_with_zone'
