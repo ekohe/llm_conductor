@@ -9,7 +9,7 @@ module LlmConductor
 
     def initialize
       # Default settings
-      @default_model = 'gpt-3.5-turbo'
+      @default_model = 'gpt-5-mini'
       @default_vendor = :openai
       @timeout = 30
       @max_retries = 3

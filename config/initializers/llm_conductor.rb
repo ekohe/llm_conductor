@@ -5,7 +5,7 @@
 
 LlmConductor.configure do |config|
   # Default settings
-  config.default_model = 'gpt-3.5-turbo'
+  config.default_model = 'gpt-5-mini'
   config.default_vendor = :openai
   config.timeout = 30
   config.max_retries = 3
