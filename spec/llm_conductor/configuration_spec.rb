@@ -7,7 +7,7 @@ RSpec.describe LlmConductor::Configuration do
 
   describe 'initialization' do
     it 'sets default configuration values' do
-      expect(config.default_model).to eq('gpt-3.5-turbo')
+      expect(config.default_model).to eq('gpt-5-mini')
       expect(config.default_vendor).to eq(:openai)
       expect(config.timeout).to eq(30)
       expect(config.max_retries).to eq(3)
