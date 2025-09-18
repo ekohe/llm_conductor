@@ -181,7 +181,7 @@ response = LlmConductor.generate(
 
 # Parse structured responses
 analysis = response.parse_json
-puts analysis['business_model']
+puts analysis
 ```
 
 ### 2. Data Builder Pattern
@@ -197,7 +197,9 @@ class CompanyDataBuilder < LlmConductor::DataBuilder
       description: format_for_llm(source_object.description, max_length: 500),
       industry: extract_nested_data(:data, 'categories', 'primary'),
       metrics: build_metrics,
-      summary: build_company_summary
+      summary: build_company_summary,
+      domain_name: source_object.domain_name
+
     }
   end
 
@@ -206,7 +208,7 @@ class CompanyDataBuilder < LlmConductor::DataBuilder
   def build_metrics
     {
       employees: format_number(source_object.employee_count),
-      revenue: format_currency(source_object.annual_revenue),
+      revenue: format_number(source_object.annual_revenue),
       growth_rate: "#{source_object.growth_rate}%"
     }
   end
