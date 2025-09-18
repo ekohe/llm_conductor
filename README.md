@@ -1,10 +1,10 @@
 # LLM Conductor
 
-A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, OpenRouter, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, OpenRouter, and Ollama with automatic vendor detection  
+🚀 **Multi-Provider Support** - OpenAI GPT and Ollama with automatic vendor detection  
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
@@ -94,10 +94,6 @@ LlmConductor.configure do |config|
     organization: ENV['OPENAI_ORG_ID'] # Optional
   )
 
-  config.openrouter(
-    api_key: ENV['OPENROUTER_API_KEY']
-  )
-
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
@@ -110,7 +106,6 @@ The gem automatically detects these environment variables:
 
 - `OPENAI_API_KEY` - OpenAI API key
 - `OPENAI_ORG_ID` - OpenAI organization ID (optional)
-- `OPENROUTER_API_KEY` - OpenRouter API key  
 - `OLLAMA_ADDRESS` - Ollama server address
 
 ## Supported Providers & Models
@@ -119,15 +114,6 @@ The gem automatically detects these environment variables:
 ```ruby
 response = LlmConductor.generate(
   model: 'gpt-4o-mini',  # Auto-detects OpenAI
-  prompt: 'Your prompt here'
-)
-```
-
-### OpenRouter (Explicit vendor needed)
-```ruby
-response = LlmConductor.generate(
-  model: 'meta-llama/llama-3.2-90b-vision-instruct',
-  vendor: :openrouter,  # Required for non-GPT models on OpenRouter
   prompt: 'Your prompt here'
 )
 ```
