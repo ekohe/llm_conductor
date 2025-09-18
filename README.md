@@ -1,10 +1,10 @@
 # LLM Conductor
 
-A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, OpenRouter, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, OpenRouter, and Ollama with automatic vendor detection  
+🚀 **Multi-Provider Support** - OpenAI GPT and Ollama with automatic vendor detection  
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
@@ -40,7 +40,7 @@ $ gem install llm_conductor
 ```ruby
 # Direct prompt generation - easiest way to get started
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   prompt: 'Explain quantum computing in simple terms'
 )
 
@@ -54,7 +54,7 @@ puts response.estimated_cost   # Cost in USD
 ```ruby
 # Use built-in templates with structured data
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :summarize_description,
   data: {
     name: 'TechCorp',
@@ -82,7 +82,7 @@ Create `config/initializers/llm_conductor.rb` (Rails) or configure in your appli
 ```ruby
 LlmConductor.configure do |config|
   # Default settings
-  config.default_model = 'gpt-4o-mini'
+  config.default_model = 'gpt-5-mini'
   config.default_vendor = :openai
   config.timeout = 30
   config.max_retries = 3
@@ -92,10 +92,6 @@ LlmConductor.configure do |config|
   config.openai(
     api_key: ENV['OPENAI_API_KEY'],
     organization: ENV['OPENAI_ORG_ID'] # Optional
-  )
-
-  config.openrouter(
-    api_key: ENV['OPENROUTER_API_KEY']
   )
 
   config.ollama(
@@ -110,7 +106,6 @@ The gem automatically detects these environment variables:
 
 - `OPENAI_API_KEY` - OpenAI API key
 - `OPENAI_ORG_ID` - OpenAI organization ID (optional)
-- `OPENROUTER_API_KEY` - OpenRouter API key  
 - `OLLAMA_ADDRESS` - Ollama server address
 
 ## Supported Providers & Models
@@ -118,16 +113,7 @@ The gem automatically detects these environment variables:
 ### OpenAI (Automatic for GPT models)
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',  # Auto-detects OpenAI
-  prompt: 'Your prompt here'
-)
-```
-
-### OpenRouter (Explicit vendor needed)
-```ruby
-response = LlmConductor.generate(
-  model: 'meta-llama/llama-3.2-90b-vision-instruct',
-  vendor: :openrouter,  # Required for non-GPT models on OpenRouter
+  model: 'gpt-5-mini',  # Auto-detects OpenAI
   prompt: 'Your prompt here'
 )
 ```
@@ -170,7 +156,7 @@ LlmConductor::PromptManager.register(:detailed_analysis, CompanyAnalysisPrompt)
 
 # Use the registered prompt
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   type: :detailed_analysis,
   data: {
     name: 'TechCorp',
@@ -181,7 +167,7 @@ response = LlmConductor.generate(
 
 # Parse structured responses
 analysis = response.parse_json
-puts analysis['business_model']
+puts analysis
 ```
 
 ### 2. Data Builder Pattern
@@ -197,7 +183,9 @@ class CompanyDataBuilder < LlmConductor::DataBuilder
       description: format_for_llm(source_object.description, max_length: 500),
       industry: extract_nested_data(:data, 'categories', 'primary'),
       metrics: build_metrics,
-      summary: build_company_summary
+      summary: build_company_summary,
+      domain_name: source_object.domain_name
+
     }
   end
 
@@ -206,7 +194,7 @@ class CompanyDataBuilder < LlmConductor::DataBuilder
   def build_metrics
     {
       employees: format_number(source_object.employee_count),
-      revenue: format_currency(source_object.annual_revenue),
+      revenue: format_number(source_object.annual_revenue),
       growth_rate: "#{source_object.growth_rate}%"
     }
   end
@@ -223,7 +211,7 @@ company = Company.find(123)
 data = CompanyDataBuilder.new(company).build
 
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   type: :detailed_analysis, 
   data: data
 )
@@ -234,7 +222,7 @@ response = LlmConductor.generate(
 #### Featured Links Extraction
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :featured_links,
   data: {
     htmls: '<html>...</html>',
@@ -246,7 +234,7 @@ response = LlmConductor.generate(
 #### HTML Summarization
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini', 
+  model: 'gpt-5-mini', 
   type: :summarize_htmls,
   data: { htmls: '<html>...</html>' }
 )
@@ -255,7 +243,7 @@ response = LlmConductor.generate(
 #### Description Summarization
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :summarize_description,
   data: {
     name: 'Company Name',
@@ -268,7 +256,7 @@ response = LlmConductor.generate(
 #### Custom Templates
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :custom,
   data: {
     template: "Analyze this data: %{data}",
@@ -311,7 +299,7 @@ The gem provides comprehensive error handling:
 
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   prompt: 'Your prompt'
 )
 
