@@ -40,7 +40,7 @@ $ gem install llm_conductor
 ```ruby
 # Direct prompt generation - easiest way to get started
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   prompt: 'Explain quantum computing in simple terms'
 )
 
@@ -54,7 +54,7 @@ puts response.estimated_cost   # Cost in USD
 ```ruby
 # Use built-in templates with structured data
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :summarize_description,
   data: {
     name: 'TechCorp',
@@ -82,7 +82,7 @@ Create `config/initializers/llm_conductor.rb` (Rails) or configure in your appli
 ```ruby
 LlmConductor.configure do |config|
   # Default settings
-  config.default_model = 'gpt-4o-mini'
+  config.default_model = 'gpt-5-mini'
   config.default_vendor = :openai
   config.timeout = 30
   config.max_retries = 3
@@ -113,7 +113,7 @@ The gem automatically detects these environment variables:
 ### OpenAI (Automatic for GPT models)
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',  # Auto-detects OpenAI
+  model: 'gpt-5-mini',  # Auto-detects OpenAI
   prompt: 'Your prompt here'
 )
 ```
@@ -156,7 +156,7 @@ LlmConductor::PromptManager.register(:detailed_analysis, CompanyAnalysisPrompt)
 
 # Use the registered prompt
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   type: :detailed_analysis,
   data: {
     name: 'TechCorp',
@@ -211,7 +211,7 @@ company = Company.find(123)
 data = CompanyDataBuilder.new(company).build
 
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   type: :detailed_analysis, 
   data: data
 )
@@ -222,7 +222,7 @@ response = LlmConductor.generate(
 #### Featured Links Extraction
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :featured_links,
   data: {
     htmls: '<html>...</html>',
@@ -234,7 +234,7 @@ response = LlmConductor.generate(
 #### HTML Summarization
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini', 
+  model: 'gpt-5-mini', 
   type: :summarize_htmls,
   data: { htmls: '<html>...</html>' }
 )
@@ -243,7 +243,7 @@ response = LlmConductor.generate(
 #### Description Summarization
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :summarize_description,
   data: {
     name: 'Company Name',
@@ -256,7 +256,7 @@ response = LlmConductor.generate(
 #### Custom Templates
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4o-mini',
+  model: 'gpt-5-mini',
   type: :custom,
   data: {
     template: "Analyze this data: %{data}",
@@ -299,7 +299,7 @@ The gem provides comprehensive error handling:
 
 ```ruby
 response = LlmConductor.generate(
-  model: 'gpt-4',
+  model: 'gpt-5-mini',
   prompt: 'Your prompt'
 )
 
