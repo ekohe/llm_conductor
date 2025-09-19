@@ -1,10 +1,10 @@
 # LLM Conductor
 
-A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT and Ollama with automatic vendor detection  
+🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, and Ollama with automatic vendor detection
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
@@ -94,6 +94,10 @@ LlmConductor.configure do |config|
     organization: ENV['OPENAI_ORG_ID'] # Optional
   )
 
+  config.anthropic(
+    api_key: ENV['ANTHROPIC_API_KEY']
+  )
+
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
@@ -106,6 +110,7 @@ The gem automatically detects these environment variables:
 
 - `OPENAI_API_KEY` - OpenAI API key
 - `OPENAI_ORG_ID` - OpenAI organization ID (optional)
+- `ANTHROPIC_API_KEY` - Anthropic API key
 - `OLLAMA_ADDRESS` - Ollama server address
 
 ## Supported Providers & Models
@@ -118,7 +123,53 @@ response = LlmConductor.generate(
 )
 ```
 
-### Ollama (Default for non-GPT models)
+### Anthropic Claude (Automatic for Claude models)
+```ruby
+response = LlmConductor.generate(
+  model: 'claude-3-5-sonnet-20241022',  # Auto-detects Anthropic
+  prompt: 'Your prompt here'
+)
+
+# Or explicitly specify vendor
+response = LlmConductor.generate(
+  model: 'claude-3-5-sonnet-20241022',
+  vendor: :anthropic,
+  prompt: 'Your prompt here'
+)
+```
+
+**Supported Claude Models:**
+- `claude-3-5-sonnet-20241022` (Latest Claude 3.5 Sonnet)
+- `claude-3-5-haiku-20241022` (Claude 3.5 Haiku)
+- `claude-3-opus-20240229` (Claude 3 Opus)
+- `claude-3-sonnet-20240229` (Claude 3 Sonnet)
+- `claude-3-haiku-20240307` (Claude 3 Haiku)
+
+**Why Choose Claude?**
+- **Superior Reasoning**: Excellent for complex analysis and problem-solving
+- **Code Generation**: Outstanding performance for programming tasks
+- **Long Context**: Support for large documents and conversations
+- **Safety**: Built with safety and helpfulness in mind
+- **Cost Effective**: Competitive pricing for high-quality outputs
+
+### Ollama (Default for non-GPT/Claude models)
+```ruby
+response = LlmConductor.generate(
+  model: 'llama3.2',  # Auto-detects Ollama for non-GPT/Claude models
+  prompt: 'Your prompt here'
+)
+```
+
+### Vendor Detection
+
+The gem automatically detects the appropriate provider based on model names:
+
+- **OpenAI**: Models starting with `gpt-` (e.g., `gpt-4`, `gpt-3.5-turbo`)
+- **Anthropic**: Models starting with `claude-` (e.g., `claude-3-5-sonnet-20241022`)
+- **Ollama**: All other models (e.g., `llama3.2`, `mistral`, `codellama`)
+
+You can also explicitly specify the vendor:
+
 ```ruby
 response = LlmConductor.generate(
   model: 'llama3.2',  # Auto-detects Ollama for non-GPT models
