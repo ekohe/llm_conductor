@@ -1,6 +1,6 @@
 # LLM Conductor
 
-A powerful Ruby gem for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
@@ -57,8 +57,8 @@ response = LlmConductor.generate(
   model: 'gpt-5-mini',
   type: :summarize_description,
   data: {
-    name: 'TechCorp',
-    domain_name: 'techcorp.com', 
+    name: 'Ekohe',
+    domain_name: 'ekohe.com',
     description: 'An AI company specializing in...'
   }
 )
@@ -159,8 +159,8 @@ response = LlmConductor.generate(
   model: 'gpt-5-mini',
   type: :detailed_analysis,
   data: {
-    name: 'TechCorp',
-    domain_name: 'techcorp.com',
+    name: 'Ekohe',
+    domain_name: 'ekohe.com',
     description: 'A leading AI company...'
   }
 )
