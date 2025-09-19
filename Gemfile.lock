@@ -3,6 +3,7 @@ PATH
   specs:
     llm_conductor (0.1.0)
       activesupport (>= 6.0)
+      anthropic (~> 1.7)
       ollama-ai (~> 1.3)
       ruby-openai (~> 7.0)
       tiktoken_ruby (~> 0.0.7)
@@ -23,6 +24,8 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
+    anthropic (1.9.0)
+      connection_pool
     ast (2.4.3)
     base64 (0.3.0)
     benchmark (0.4.1)

@@ -10,7 +10,7 @@ RSpec.describe LlmConductor do
     end
 
     it 'defines supported vendors' do
-      expect(described_class::SUPPORTED_VENDORS).to eq(%i[openai openrouter ollama])
+      expect(described_class::SUPPORTED_VENDORS).to match_array(%i[openai openrouter ollama anthropic])
     end
 
     it 'defines supported prompt types' do
