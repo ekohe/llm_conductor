@@ -90,7 +90,7 @@ module LlmConductor
       def build_metadata
         {
           vendor: self.class.name.split('::').last.gsub('Client', '').downcase.to_sym,
-          timestamp: Time.zone.now.iso8601
+          timestamp: Time.now.utc.iso8601
         }
       end
     end
