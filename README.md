@@ -52,14 +52,18 @@ puts response.estimated_cost   # Cost in USD
 ### 2. Template-Based Generation
 
 ```ruby
-# Use built-in templates with structured data
+# Use built-in text summarization template
 response = LlmConductor.generate(
   model: 'gpt-5-mini',
-  type: :summarize_description,
+  type: :summarize_text,
   data: {
-    name: 'Ekohe',
-    domain_name: 'ekohe.com',
-    description: 'An AI company specializing in...'
+    text: 'Ekohe (ee-koh-hee) means "boundless possibility." Our way is to make AI practical, achievable, and most importantly, useful for you — and we prove it every day. With almost 16 years of wins under our belt, a market-leading 24-hr design & development cycle, and 5 offices in the most vibrant cities in the world, we surf the seas of innovation. We create efficient, elegant, and scalable digital products — delivering the right interactive solutions to achieve your audience and business goals. We help you transform. We break new ground across the globe — from AI and ML automation that drives the enterprise, to innovative customer experiences and mobile apps for startups. Our special sauce is the care, curiosity, and dedication we offer to solve for your needs. We focus on your success and deliver the most impactful experiences in the most efficient manner. Our clients tell us we partner with them in a trusted and capable way, driving the right design and technical choices.',
+    max_length: '20 words',
+    style: 'professional and engaging',
+    focus_areas: ['core business', 'expertise', 'target market'],
+    audience: 'potential investors',
+    include_key_points: true,
+    output_format: 'paragraph'
   }
 )
 
@@ -67,7 +71,7 @@ response = LlmConductor.generate(
 if response.success?
   puts "Generated: #{response.output}"
   puts "Tokens: #{response.total_tokens}"
-  puts "Cost: $#{response.estimated_cost}"
+  puts "Cost: $#{response.estimated_cost || 'N/A (free model)'}"
 else
   puts "Error: #{response.metadata[:error]}"
 end

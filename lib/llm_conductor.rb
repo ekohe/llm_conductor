@@ -70,9 +70,10 @@ module LlmConductor
 
   # List of supported prompt types
   SUPPORTED_PROMPT_TYPES = %i[
-    featured_links
-    summarize_htmls
-    summarize_description
+    extract_links
+    analyze_content
+    summarize_text
+    classify_content
     custom
   ].freeze
 end
