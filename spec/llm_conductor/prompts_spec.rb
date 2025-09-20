@@ -5,92 +5,187 @@ require 'spec_helper'
 RSpec.describe LlmConductor::Prompts do
   let(:test_class) { Class.new { include LlmConductor::Prompts }.new }
 
-  describe '#prompt_featured_links' do
+  describe '#prompt_extract_links' do
     let(:data) do
       {
         htmls: '<html><body><a href="/about">About</a><a href="/contact">Contact</a></body></html>',
-        current_url: 'https://example.com'
+        criteria: 'navigation and content links',
+        max_links: 5,
+        link_types: ['navigation', 'content']
       }
     end
 
-    it 'generates a prompt for extracting featured links' do
-      result = test_class.prompt_featured_links(data)
+    it 'generates a prompt for extracting links' do
+      result = test_class.prompt_extract_links(data)
 
-      expect(result).to include('analyzing a webpage\'s HTML content to extract the most valuable links')
+      expect(result).to include('Analyze the provided HTML content and extract links')
       expect(result).to include(data[:htmls])
-      expect(result).to include(data[:current_url])
-      expect(result).to include('["https://example.com/about-us", "https://example.com/products"')
+      expect(result).to include('navigation and content links')
+      expect(result).to include('Maximum Links: 5')
+      expect(result).to include('navigation, content')
     end
 
-    it 'handles missing data gracefully' do
-      result = test_class.prompt_featured_links({})
+    it 'handles missing data with defaults' do
+      result = test_class.prompt_extract_links({})
 
-      expect(result).to include('analyzing a webpage\'s HTML content')
-      expect(result).to include('<page_html>')
-      expect(result).to include('<domain>')
+      expect(result).to include('relevant and useful')
+      expect(result).to include('Maximum Links: 10')
+      expect(result).to include('navigation, content, footer')
+    end
+
+    it 'includes domain filter when provided' do
+      data_with_filter = data.merge(domain_filter: 'example.com')
+      result = test_class.prompt_extract_links(data_with_filter)
+
+      expect(result).to include('Domain Filter: Only include links from domain example.com')
     end
   end
 
-  describe '#prompt_summarize_htmls' do
-    let(:data) do
-      { htmls: '<html><body><h1>Company Name</h1><p>We do great things</p></body></html>' }
-    end
-
-    it 'generates a prompt for HTML summarization' do
-      result = test_class.prompt_summarize_htmls(data)
-
-      expect(result).to include('Extract useful information from the webpage')
-      expect(result).to include('domain, detailed description')
-      expect(result).to include('founding year, country, business model')
-      expect(result).to include(data[:htmls])
-      expect(result).to include('"name": "AI-powered customer service"')
-    end
-
-    it 'includes JSON example format' do
-      result = test_class.prompt_summarize_htmls(data)
-
-      expect(result).to include('"domain_name": "example.com"')
-      expect(result).to include('"business_model": "SaaS subscription"')
-      expect(result).to include('"social_media_links"')
-    end
-  end
-
-  describe '#prompt_summarize_description' do
+  describe '#prompt_analyze_content' do
     let(:data) do
       {
-        name: 'TechCorp',
-        domain_name: 'techcorp.com',
-        description: 'A leading AI company',
-        industries: ['Artificial Intelligence', 'Software']
+        content: 'This is some sample content to analyze',
+        content_type: 'blog post',
+        fields: ['summary', 'key_topics', 'sentiment'],
+        output_format: 'json'
       }
     end
 
-    it 'generates a prompt for description summarization' do
-      result = test_class.prompt_summarize_description(data)
+    it 'generates a prompt for content analysis' do
+      result = test_class.prompt_analyze_content(data)
 
-      expect(result).to include('Given the company\'s name, domain, description')
-      expect(result).to include('summarize the company\'s core business')
-      expect(result).to include('identify the three most relevant industries')
-      expect(result).to include('unique value proposition')
-      expect(result).to include('primary market focus')
+      expect(result).to include('Analyze the provided blog post')
+      expect(result).to include('This is some sample content to analyze')
+      expect(result).to include('- summary')
+      expect(result).to include('- key_topics')
+      expect(result).to include('- sentiment')
     end
 
-    it 'includes company data in the prompt' do
-      result = test_class.prompt_summarize_description(data)
+    it 'handles default values' do
+      result = test_class.prompt_analyze_content({ content: 'test' })
 
-      expect(result).to include('TechCorp')
-      expect(result).to include('techcorp.com')
-      expect(result).to include('A leading AI company')
-      expect(result).to include('Artificial Intelligence')
-      expect(result).to include('Software')
+      expect(result).to include('webpage content')
+      expect(result).to include('- summary')
+      expect(result).to include('- key_points')
+      expect(result).to include('- entities')
+      expect(result).to include('structured text')
     end
 
-    it 'handles missing data gracefully' do
-      minimal_data = { name: 'TestCorp' }
-      result = test_class.prompt_summarize_description(minimal_data)
+    it 'includes JSON format when specified' do
+      result = test_class.prompt_analyze_content(data)
 
-      expect(result).to include('TestCorp')
-      expect(result).to include('summarize the company\'s core business')
+      expect(result).to include('Output Format: JSON')
+      expect(result).to include('"summary": "value or array"')
+      expect(result).to include('"key_topics": "value or array"')
+    end
+
+    it 'includes additional instructions when provided' do
+      data_with_instructions = data.merge(instructions: 'Focus on technical details')
+      result = test_class.prompt_analyze_content(data_with_instructions)
+
+      expect(result).to include('Additional Instructions:')
+      expect(result).to include('Focus on technical details')
+    end
+  end
+
+  describe '#prompt_summarize_text' do
+    let(:data) do
+      {
+        text: 'This is a long piece of text that needs to be summarized with key points and themes.',
+        max_length: '50 words',
+        style: 'professional',
+        focus_areas: ['main points', 'conclusions'],
+        audience: 'executives',
+        include_key_points: true,
+        output_format: 'paragraph'
+      }
+    end
+
+    it 'generates a prompt for text summarization' do
+      result = test_class.prompt_summarize_text(data)
+
+      expect(result).to include('Summarize the following text content')
+      expect(result).to include('This is a long piece of text')
+      expect(result).to include('Maximum Length: 50 words')
+      expect(result).to include('Style: professional')
+      expect(result).to include('Focus Areas: main points, conclusions')
+      expect(result).to include('Target Audience: executives')
+    end
+
+    it 'handles default values' do
+      result = test_class.prompt_summarize_text({ text: 'sample text' })
+
+      expect(result).to include('Maximum Length: 200 words')
+      expect(result).to include('Style: concise and informative')
+    end
+
+    it 'includes key points instruction when specified' do
+      result = test_class.prompt_summarize_text(data)
+
+      expect(result).to include('Include key points and main themes')
+    end
+
+    it 'includes format instructions' do
+      result = test_class.prompt_summarize_text(data)
+
+      expect(result).to include('Format as a single paragraph')
+    end
+
+    it 'handles bullet points format' do
+      bullet_data = data.merge(output_format: 'bullet_points')
+      result = test_class.prompt_summarize_text(bullet_data)
+
+      expect(result).to include('Format as bullet points')
+    end
+  end
+
+  describe '#prompt_classify_content' do
+    let(:data) do
+      {
+        content: 'This is a technical article about machine learning algorithms',
+        categories: ['Technology', 'Business', 'Health', 'Education'],
+        classification_type: 'article',
+        include_confidence: true
+      }
+    end
+
+    it 'generates a prompt for content classification' do
+      result = test_class.prompt_classify_content(data)
+
+      expect(result).to include('Classify the provided article')
+      expect(result).to include('This is a technical article about machine learning')
+      expect(result).to include('1. Technology')
+      expect(result).to include('2. Business')
+      expect(result).to include('3. Health')
+      expect(result).to include('4. Education')
+    end
+
+    it 'handles default values' do
+      result = test_class.prompt_classify_content({ content: 'test content' })
+
+      expect(result).to include('content')
+      expect(result).to include('Return the most appropriate category name')
+    end
+
+    it 'includes confidence scores when requested' do
+      result = test_class.prompt_classify_content(data)
+
+      expect(result).to include('JSON with category and confidence score (0-1)')
+    end
+
+    it 'includes classification criteria when provided' do
+      data_with_criteria = data.merge(classification_criteria: 'Focus on primary topic and intent')
+      result = test_class.prompt_classify_content(data_with_criteria)
+
+      expect(result).to include('Classification Criteria:')
+      expect(result).to include('Focus on primary topic and intent')
+    end
+
+    it 'handles multiple categories selection' do
+      multi_data = data.merge(multiple_categories: true, max_categories: 2)
+      result = test_class.prompt_classify_content(multi_data)
+
+      expect(result).to include('Multiple categories may apply - select up to 2 most relevant')
     end
   end
 

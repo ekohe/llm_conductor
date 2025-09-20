@@ -4,14 +4,11 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor do
   describe 'end-to-end integration tests' do
-    let(:data) do
-      {
-        name: 'TechCorp',
-        domain_name: 'techcorp.com',
-        description: 'A leading AI technology company',
-        industries: ['Artificial Intelligence', 'Software Development']
-      }
-    end
+  let(:data) do
+    {
+      text: 'TechCorp is a leading AI technology company based on techcorp.com, specializing in Artificial Intelligence and Software Development solutions.'
+    }
+  end
 
     before do
       described_class.configure do |config|
@@ -39,7 +36,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'creates Anthropic client and generates response successfully', :aggregate_failures do
-          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_text)
           result = client.generate(data:)
 
           expect(client).to be_a(LlmConductor::Clients::AnthropicClient)
@@ -70,7 +67,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'creates GPT client and generates response successfully', :aggregate_failures do
-          client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+          client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_text)
           result = client.generate(data:)
 
           expect(client).to be_a(LlmConductor::Clients::GptClient)
@@ -107,7 +104,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'creates OpenRouter client and generates featured links', :aggregate_failures do
-          client = described_class.build_client(model: 'llama-3.2-90b', type: :featured_links, vendor: :openrouter)
+          client = described_class.build_client(model: 'llama-3.2-90b', type: :extract_links, vendor: :openrouter)
           result = client.generate(data: link_data)
 
           expect(client).to be_a(LlmConductor::Clients::OpenrouterClient)
@@ -133,7 +130,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'creates Ollama client and generates summary', :aggregate_failures do
-          client = described_class.build_client(model: 'llama2', type: :summarize_description)
+          client = described_class.build_client(model: 'llama2', type: :summarize_text)
           result = client.generate(data:)
 
           expect(client).to be_a(LlmConductor::Clients::OllamaClient)
@@ -163,7 +160,7 @@ RSpec.describe LlmConductor do
         it 'generates content using the convenience method with Anthropic', :aggregate_failures do
           result = described_class.generate(
             model: 'claude-3-5-sonnet-20241022',
-            type: :summarize_description,
+            type: :summarize_text,
             data:,
             vendor: :anthropic
           )
@@ -196,7 +193,7 @@ RSpec.describe LlmConductor do
         it 'generates content using the convenience method', :aggregate_failures do
           result = described_class.generate(
             model: 'gpt-4o-mini',
-            type: :summarize_description,
+            type: :summarize_text,
             data:,
             vendor: nil
           )
@@ -222,7 +219,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'handles API errors gracefully' do
-          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_text)
 
           result = client.generate(data:)
           expect(result).to be_a(LlmConductor::Response)
@@ -240,7 +237,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'handles API errors gracefully' do
-          client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+          client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
           result = client.generate(data:)
           expect(result).to be_a(LlmConductor::Response)
@@ -309,7 +306,7 @@ RSpec.describe LlmConductor do
         end
       end
 
-      context 'with summarize_htmls type' do
+      context 'with analyze_content type' do
         let(:html_data) do
           { htmls: '<html><h1>TechCorp</h1><p>AI solutions provider</p></html>' }
         end
@@ -329,14 +326,14 @@ RSpec.describe LlmConductor do
           allow(mock_openai_client).to receive(:chat).and_return(api_response)
         end
 
-        it 'processes HTML summarization requests' do
+        it 'processes HTML content analysis requests' do
           result = described_class.generate(
             model: 'gpt-4o-mini',
-            type: :summarize_htmls,
+            type: :analyze_content,
             data: html_data
           )
 
-          expect(result.metadata[:prompt]).to include('Extract useful information from the webpage')
+          expect(result.metadata[:prompt]).to include('Analyze the provided webpage content and extract')
           expect(result.output).to include('TechCorp')
         end
       end
@@ -352,7 +349,7 @@ RSpec.describe LlmConductor do
           config.anthropic_api_key = 'updated_anthropic_key'
         end
 
-        client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+        client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_text)
         # Trigger client instantiation by accessing the private client method
         client.send(:client)
 
@@ -370,7 +367,7 @@ RSpec.describe LlmConductor do
           config.openai_api_key = 'updated_key'
         end
 
-        client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        client = described_class.build_client(model: 'gpt-4o-mini', type: :summarize_text)
         # Trigger client instantiation by accessing the private client method
         client.send(:client)
 

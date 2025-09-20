@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::OpenrouterClient do
   let(:model) { 'meta-llama/llama-3.2-90b-vision-instruct' }
-  let(:type) { :summarize_htmls }
+  let(:type) { :analyze_content }
   let(:client) { described_class.new(model:, type:) }
 
   before do
@@ -103,7 +103,7 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
 
   describe 'integration with base class' do
     let(:data) do
-      { htmls: '<html><body><h1>AI Company</h1><p>Leading AI solutions</p></body></html>' }
+      { content: '<html><body><h1>AI Company</h1><p>Leading AI solutions</p></body></html>' }
     end
     let(:mock_openai_client) { double('OpenAI::Client') }
     let(:api_response) do
@@ -121,14 +121,14 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
       allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
     end
 
-    it 'generates complete response for HTML summarization', :aggregate_failures do
+    it 'generates complete response for content analysis', :aggregate_failures do
       result = client.generate(data:)
 
       expect(result).to be_a(LlmConductor::Response)
       expect(result.output).to eq('{"name": "AI Company", "description": "Leading AI solutions"}')
       expect(result.input_tokens).to eq(4)
       expect(result.output_tokens).to eq(4)
-      expect(result.metadata[:prompt]).to include('Extract useful information from the webpage')
+      expect(result.metadata[:prompt]).to include('Analyze the provided webpage content and extract')
     end
   end
 end

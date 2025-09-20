@@ -13,7 +13,7 @@ RSpec.describe 'LlmConductor Error Handling' do
       end
 
       it 'handles missing OpenAI API key gracefully in GPT client' do
-        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
         # The client should be created, but API calls may fail
         expect(client).to be_a(LlmConductor::Clients::GptClient)
@@ -21,7 +21,7 @@ RSpec.describe 'LlmConductor Error Handling' do
       end
 
       it 'handles missing OpenRouter API key gracefully in OpenRouter client' do
-        client = LlmConductor.build_client(model: 'llama-3.2', type: :featured_links, vendor: :openrouter)
+        client = LlmConductor.build_client(model: 'llama-3.2', type: :extract_links, vendor: :openrouter)
 
         expect(client).to be_a(LlmConductor::Clients::OpenrouterClient)
         expect(client.send(:client)).to be_a(OpenAI::Client)
@@ -43,7 +43,7 @@ RSpec.describe 'LlmConductor Error Handling' do
   end
 
   describe 'API errors' do
-    let(:data) { { name: 'TestCorp', description: 'Test company' } }
+    let(:data) { { text: 'TestCorp is a test company for error handling scenarios.' } }
 
     context 'with OpenAI API errors' do
       let(:mock_openai_client) { double('OpenAI::Client') }
@@ -55,7 +55,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles network errors gracefully' do
         allow(mock_openai_client).to receive(:chat).and_raise(StandardError, 'Request timeout')
-        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)
@@ -65,7 +65,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles API authentication errors gracefully' do
         allow(mock_openai_client).to receive(:chat).and_raise(StandardError, 'Unauthorized')
-        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)
@@ -75,7 +75,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles malformed API responses gracefully' do
         allow(mock_openai_client).to receive(:chat).and_return({})
-        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)
@@ -94,7 +94,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles connection errors gracefully' do
         allow(mock_ollama_client).to receive(:generate).and_raise(Errno::ECONNREFUSED)
-        client = LlmConductor.build_client(model: 'llama2', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'llama2', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)
@@ -104,7 +104,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles empty responses gracefully' do
         allow(mock_ollama_client).to receive(:generate).and_return([])
-        client = LlmConductor.build_client(model: 'llama2', type: :summarize_description)
+        client = LlmConductor.build_client(model: 'llama2', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)
@@ -168,9 +168,9 @@ RSpec.describe 'LlmConductor Error Handling' do
 
     it 'handles tiktoken encoding errors gracefully' do
       allow(Tiktoken).to receive(:get_encoding).and_raise(StandardError, 'Encoding error')
-      client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+      client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
-      result = client.generate(data: { name: 'TestCorp' })
+      result = client.generate(data: { text: 'TestCorp test data' })
       expect(result).to be_a(LlmConductor::Response)
       expect(result.success?).to be false
       expect(result.metadata[:error]).to include('Encoding error')

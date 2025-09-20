@@ -151,8 +151,9 @@ module LlmConductor
     # Flexible custom prompt template
     # Allows for dynamic prompt creation with variable substitution
     def prompt_custom(data)
-      template = data.fetch(:template, "Please analyze the following content: %{content}")
+      template = data.fetch(:template)
       template % data
     end
+
   end
 end
