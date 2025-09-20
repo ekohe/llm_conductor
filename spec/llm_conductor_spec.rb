@@ -15,12 +15,12 @@ RSpec.describe LlmConductor do
 
     it 'defines supported prompt types' do
       expect(described_class::SUPPORTED_PROMPT_TYPES).to eq(%i[
-                                                            extract_links
-                                                            analyze_content
-                                                            summarize_text
-                                                            classify_content
-                                                            custom
-                                                          ])
+                                                              extract_links
+                                                              analyze_content
+                                                              summarize_text
+                                                              classify_content
+                                                              custom
+                                                            ])
     end
   end
 

@@ -4,11 +4,12 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor do
   describe 'end-to-end integration tests' do
-  let(:data) do
-    {
-      text: 'TechCorp is a leading AI technology company based on techcorp.com, specializing in Artificial Intelligence and Software Development solutions.'
-    }
-  end
+    let(:data) do
+      {
+        text: 'TechCorp is a leading AI technology company based on techcorp.com, ' \
+              'specializing in Artificial Intelligence and Software Development solutions.'
+      }
+    end
 
     before do
       described_class.configure do |config|

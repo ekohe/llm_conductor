@@ -11,7 +11,7 @@ RSpec.describe LlmConductor::Prompts do
         htmls: '<html><body><a href="/about">About</a><a href="/contact">Contact</a></body></html>',
         criteria: 'navigation and content links',
         max_links: 5,
-        link_types: ['navigation', 'content']
+        link_types: %w[navigation content]
       }
     end
 
@@ -46,7 +46,7 @@ RSpec.describe LlmConductor::Prompts do
       {
         content: 'This is some sample content to analyze',
         content_type: 'blog post',
-        fields: ['summary', 'key_topics', 'sentiment'],
+        fields: %w[summary key_topics sentiment],
         output_format: 'json'
       }
     end
@@ -143,7 +143,7 @@ RSpec.describe LlmConductor::Prompts do
     let(:data) do
       {
         content: 'This is a technical article about machine learning algorithms',
-        categories: ['Technology', 'Business', 'Health', 'Education'],
+        categories: %w[Technology Business Health Education],
         classification_type: 'article',
         include_confidence: true
       }

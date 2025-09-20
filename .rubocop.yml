@@ -27,21 +27,14 @@ Style/StringLiteralsInInterpolation:
 
 Style/HashSyntax:
   EnforcedShorthandSyntax: always
-# This is not rails application.
-# Rails/Blank:
-#   Enabled: false
-
-# Rails/Present:
-#   Enabled: false
-
-# Rails/TimeZone:
-#   Enabled: false
 
 Lint/ConstantDefinitionInBlock:
   Enabled: false
 
 Metrics/MethodLength:
   Max: 15
+  Exclude:
+    - 'lib/llm_conductor/prompts.rb'
 
 RSpec/ExampleLength:
   Enabled: false
@@ -93,6 +86,19 @@ Style/Documentation:
 Metrics/BlockLength:
   Exclude:
     - '*.gemspec'
+
+# Prompt template methods naturally have high complexity due to conditional string building
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/llm_conductor/prompts.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/llm_conductor/prompts.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/llm_conductor/prompts.rb'
 
 Layout/LineLength:
   Max: 120
