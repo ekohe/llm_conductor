@@ -15,6 +15,7 @@ RSpec.describe LlmConductor do
 
     before do
       described_class.configure do |config|
+        config.anthropic_api_key = 'test_anthropic_key'
         config.openai_api_key = 'test_openai_key'
         config.openrouter_api_key = 'test_openrouter_key'
         config.ollama_address = 'http://localhost:11434'
@@ -22,6 +23,35 @@ RSpec.describe LlmConductor do
     end
 
     describe '.build_client + client.generate flow' do
+      context 'with Anthropic client' do
+        let(:mock_anthropic_client) { double('Anthropic::Client') }
+        let(:mock_response) do
+          double('response',
+                 content: [double('content',
+                                  text: 'TechCorp is a leading AI company specializing in software development.')])
+        end
+        let(:mock_encoder) { double('encoder', encode: %w[token1 token2 token3]) }
+
+        before do
+          allow(Anthropic::Client).to receive(:new).and_return(mock_anthropic_client)
+          allow(mock_anthropic_client).to receive(:messages).and_return(double('messages', create: mock_response))
+          allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
+        end
+
+        it 'creates Anthropic client and generates response successfully', :aggregate_failures do
+          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+          result = client.generate(data:)
+
+          expect(client).to be_a(LlmConductor::Clients::AnthropicClient)
+          expect(result).to be_a(LlmConductor::Response)
+          expect(result.output).to eq('TechCorp is a leading AI company specializing in software development.')
+          expect(result.input_tokens).to eq(3)
+          expect(result.output_tokens).to eq(3)
+          expect(result.metadata[:prompt]).to include('TechCorp')
+          expect(result.metadata[:prompt]).to include('techcorp.com')
+        end
+      end
+
       context 'with GPT client' do
         let(:mock_openai_client) { double('OpenAI::Client') }
         let(:api_response) do
@@ -117,40 +147,91 @@ RSpec.describe LlmConductor do
     end
 
     describe '.generate convenience method' do
-      let(:mock_openai_client) { double('OpenAI::Client') }
-      let(:api_response) do
-        {
-          'choices' => [
-            { 'message' => { 'content' => 'Generated via convenience method' } }
-          ]
-        }
+      context 'with Anthropic' do
+        let(:mock_anthropic_client) { double('Anthropic::Client') }
+        let(:mock_response) do
+          double('response', content: [double('content', text: 'Generated via convenience method')])
+        end
+        let(:mock_encoder) { double('encoder', encode: %w[token]) }
+
+        before do
+          allow(Anthropic::Client).to receive(:new).and_return(mock_anthropic_client)
+          allow(mock_anthropic_client).to receive(:messages).and_return(double('messages', create: mock_response))
+          allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
+        end
+
+        it 'generates content using the convenience method with Anthropic', :aggregate_failures do
+          result = described_class.generate(
+            model: 'claude-3-5-sonnet-20241022',
+            type: :summarize_description,
+            data:,
+            vendor: :anthropic
+          )
+
+          expect(result).to be_a(LlmConductor::Response)
+          expect(result.output).to eq('Generated via convenience method')
+          expect(result.input_tokens).to eq(1)
+          expect(result.output_tokens).to eq(1)
+          expect(result.metadata[:prompt]).to include('TechCorp')
+        end
       end
-      let(:mock_encoder) { double('encoder', encode: %w[token]) }
 
-      before do
-        allow(OpenAI::Client).to receive(:new).and_return(mock_openai_client)
-        allow(mock_openai_client).to receive(:chat).and_return(api_response)
-        allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
-      end
+      context 'with GPT' do
+        let(:mock_openai_client) { double('OpenAI::Client') }
+        let(:api_response) do
+          {
+            'choices' => [
+              { 'message' => { 'content' => 'Generated via convenience method' } }
+            ]
+          }
+        end
+        let(:mock_encoder) { double('encoder', encode: %w[token]) }
 
-      it 'generates content using the convenience method', :aggregate_failures do
-        result = described_class.generate(
-          model: 'gpt-4o-mini',
-          type: :summarize_description,
-          data:,
-          vendor: nil
-        )
+        before do
+          allow(OpenAI::Client).to receive(:new).and_return(mock_openai_client)
+          allow(mock_openai_client).to receive(:chat).and_return(api_response)
+          allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
+        end
 
-        expect(result).to be_a(LlmConductor::Response)
-        expect(result.output).to eq('Generated via convenience method')
-        expect(result.input_tokens).to eq(1)
-        expect(result.output_tokens).to eq(1)
-        expect(result.metadata[:prompt]).to include('TechCorp')
+        it 'generates content using the convenience method', :aggregate_failures do
+          result = described_class.generate(
+            model: 'gpt-4o-mini',
+            type: :summarize_description,
+            data:,
+            vendor: nil
+          )
+
+          expect(result).to be_a(LlmConductor::Response)
+          expect(result.output).to eq('Generated via convenience method')
+          expect(result.input_tokens).to eq(1)
+          expect(result.output_tokens).to eq(1)
+          expect(result.metadata[:prompt]).to include('TechCorp')
+        end
       end
     end
 
     describe 'error handling scenarios' do
-      context 'when API call fails' do
+      context 'when Anthropic API call fails' do
+        let(:mock_anthropic_client) { double('Anthropic::Client') }
+
+        before do
+          allow(Anthropic::Client).to receive(:new).and_return(mock_anthropic_client)
+          messages_mock = double('messages')
+          allow(messages_mock).to receive(:create).and_raise(StandardError, 'API Error')
+          allow(mock_anthropic_client).to receive(:messages).and_return(messages_mock)
+        end
+
+        it 'handles API errors gracefully' do
+          client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+
+          result = client.generate(data:)
+          expect(result).to be_a(LlmConductor::Response)
+          expect(result.success?).to be false
+          expect(result.metadata[:error]).to include('API Error')
+        end
+      end
+
+      context 'when GPT API call fails' do
         let(:mock_openai_client) { double('OpenAI::Client') }
 
         before do
@@ -262,7 +343,25 @@ RSpec.describe LlmConductor do
     end
 
     describe 'configuration integration' do
-      it 'respects configuration changes across client creations' do
+      it 'respects Anthropic configuration changes across client creations' do
+        mock_client = double('Anthropic::Client')
+        allow(Anthropic::Client).to receive(:new).and_return(mock_client)
+
+        # Change configuration
+        described_class.configure do |config|
+          config.anthropic_api_key = 'updated_anthropic_key'
+        end
+
+        client = described_class.build_client(model: 'claude-3-5-sonnet-20241022', type: :summarize_description)
+        # Trigger client instantiation by accessing the private client method
+        client.send(:client)
+
+        expect(Anthropic::Client).to have_received(:new).with(
+          api_key: 'updated_anthropic_key'
+        )
+      end
+
+      it 'respects OpenAI configuration changes across client creations' do
         mock_client = double('OpenAI::Client')
         allow(OpenAI::Client).to receive(:new).and_return(mock_client)
 

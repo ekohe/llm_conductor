@@ -8,6 +8,7 @@ require_relative 'llm_conductor/prompts'
 require_relative 'llm_conductor/prompts/base_prompt'
 require_relative 'llm_conductor/prompt_manager'
 require_relative 'llm_conductor/clients/base_client'
+require_relative 'llm_conductor/clients/anthropic_client'
 require_relative 'llm_conductor/clients/gpt_client'
 require_relative 'llm_conductor/clients/ollama_client'
 require_relative 'llm_conductor/clients/openrouter_client'
@@ -54,17 +55,18 @@ module LlmConductor
 
     def client_class_for_vendor(vendor)
       case vendor
+      when :anthropic, :claude then Clients::AnthropicClient
       when :openai, :gpt then Clients::GptClient
       when :openrouter then Clients::OpenrouterClient
       when :ollama then Clients::OllamaClient
       else
-        raise ArgumentError, "Unsupported vendor: #{vendor}. Supported vendors: openai, openrouter, ollama"
+        raise ArgumentError, "Unsupported vendor: #{vendor}. Supported vendors: anthropic, openai, openrouter, ollama"
       end
     end
   end
 
   # List of supported vendors
-  SUPPORTED_VENDORS = %i[openai openrouter ollama].freeze
+  SUPPORTED_VENDORS = %i[anthropic openai openrouter ollama].freeze
 
   # List of supported prompt types
   SUPPORTED_PROMPT_TYPES = %i[

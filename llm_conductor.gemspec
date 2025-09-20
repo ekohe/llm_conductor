@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
 
   # Core dependencies for LLM providers
   spec.add_dependency 'activesupport', '>= 6.0'
+  spec.add_dependency 'anthropic', '~> 1.7'
   spec.add_dependency 'ollama-ai', '~> 1.3'
   spec.add_dependency 'ruby-openai', '~> 7.0'
   spec.add_dependency 'tiktoken_ruby', '~> 0.0.7'

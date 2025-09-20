@@ -7,6 +7,8 @@ module LlmConductor
       vendor ||= determine_vendor(model)
 
       client_class = case vendor
+                     when :anthropic, :claude
+                       Clients::AnthropicClient
                      when :openai, :gpt
                        Clients::GptClient
                      when :openrouter
@@ -15,7 +17,7 @@ module LlmConductor
                        Clients::OllamaClient
                      else
                        raise ArgumentError,
-                             "Unsupported vendor: #{vendor}. Supported vendors: openai, openrouter, ollama"
+                             "Unsupported vendor: #{vendor}. Supported vendors: anthropic, openai, openrouter, ollama"
                      end
 
       client_class.new(model:, type:)
@@ -23,6 +25,8 @@ module LlmConductor
 
     def self.determine_vendor(model)
       case model
+      when /^claude/i
+        :anthropic
       when /^gpt/i
         :openai
       else

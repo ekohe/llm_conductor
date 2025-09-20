@@ -22,6 +22,14 @@ module LlmConductor
       setup_defaults_from_env
     end
 
+    # Configure Anthropic provider
+    def anthropic(api_key: nil, **options)
+      @providers[:anthropic] = {
+        api_key: api_key || ENV['ANTHROPIC_API_KEY'],
+        **options
+      }
+    end
+
     # Configure OpenAI provider
     def openai(api_key: nil, organization: nil, **options)
       @providers[:openai] = {
@@ -53,6 +61,14 @@ module LlmConductor
     end
 
     # Legacy compatibility methods
+    def anthropic_api_key
+      provider_config(:anthropic)[:api_key]
+    end
+
+    def anthropic_api_key=(value)
+      anthropic(api_key: value)
+    end
+
     def openai_api_key
       provider_config(:openai)[:api_key]
     end
@@ -81,6 +97,7 @@ module LlmConductor
 
     def setup_defaults_from_env
       # Auto-configure providers if environment variables are present
+      anthropic if ENV['ANTHROPIC_API_KEY']
       openai if ENV['OPENAI_API_KEY']
       openrouter if ENV['OPENROUTER_API_KEY']
       ollama # Always configure Ollama with default URL
