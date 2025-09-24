@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::GeminiClient do
-  let(:model) { 'gemini-1.5-pro' }
+  let(:model) { 'gemini-1.5-flash' }
   let(:type) { :summarize_description }
   let(:client) { described_class.new(model:, type:) }
 
@@ -47,9 +47,11 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
       client.send(:generate_content, prompt)
 
       expect(mock_gemini_client).to have_received(:generate_content).with(
-        contents: [
-          { parts: [{ text: prompt }] }
-        ]
+        {
+          contents: [
+            { parts: [{ text: prompt }] }
+          ]
+        }
       )
     end
 

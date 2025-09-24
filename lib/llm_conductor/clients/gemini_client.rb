@@ -9,11 +9,14 @@ module LlmConductor
       private
 
       def generate_content(prompt)
-        client.generate_content(
+        payload = {
           contents: [
             { parts: [{ text: prompt }] }
           ]
-        ).dig('candidates', 0, 'content', 'parts', 0, 'text')
+        }
+
+        response = client.generate_content(payload)
+        response.dig('candidates', 0, 'content', 'parts', 0, 'text')
       end
 
       def client

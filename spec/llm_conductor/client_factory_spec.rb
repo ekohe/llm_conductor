@@ -76,7 +76,7 @@ RSpec.describe LlmConductor::ClientFactory do
       end
 
       context 'and model starts with "gemini"' do
-        let(:model) { 'gemini-1.5-pro' }
+        let(:model) { 'gemini-1.5-flash' }
 
         it 'returns a GeminiClient instance' do
           client = described_class.build(model:, type:)

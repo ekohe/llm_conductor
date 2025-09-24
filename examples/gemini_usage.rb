@@ -9,7 +9,7 @@ end
 
 # Example usage
 response = LlmConductor.generate(
-  model: 'gemini-1.5-pro',
+  model: 'gemini-1.5-flash',
   prompt: 'Explain how AI works in a few words'
 )
 
