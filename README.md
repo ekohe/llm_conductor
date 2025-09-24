@@ -436,7 +436,7 @@ bin/console
 
 ## Testing
 
-The gem includes comprehensive test coverage with unit, integration, and performance tests. See `spec/TESTING_GUIDE.md` for detailed testing information.
+The gem includes comprehensive test coverage with unit, integration, and performance tests.
 
 ## Performance
 
