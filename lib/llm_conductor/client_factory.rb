@@ -15,9 +15,11 @@ module LlmConductor
                        Clients::OpenrouterClient
                      when :ollama
                        Clients::OllamaClient
+                     when :gemini, :google
+                       Clients::GeminiClient
                      else
                        raise ArgumentError,
-                             "Unsupported vendor: #{vendor}. Supported vendors: anthropic, openai, openrouter, ollama"
+                             "Unsupported vendor: #{vendor}. Supported vendors: anthropic, openai, openrouter, ollama, gemini"
                      end
 
       client_class.new(model:, type:)
@@ -29,6 +31,8 @@ module LlmConductor
         :anthropic
       when /^gpt/i
         :openai
+      when /^gemini/i
+        :gemini
       else
         :ollama # Default to Ollama for non-specific model names
       end

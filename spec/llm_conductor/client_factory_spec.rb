@@ -34,6 +34,24 @@ RSpec.describe LlmConductor::ClientFactory do
       end
     end
 
+    context 'when vendor is :gemini' do
+      it 'returns a GeminiClient instance' do
+        client = described_class.build(model:, type:, vendor: :gemini)
+        expect(client).to be_a(LlmConductor::Clients::GeminiClient)
+        expect(client.model).to eq(model)
+        expect(client.type).to eq(type)
+      end
+    end
+
+    context 'when vendor is :google' do
+      it 'returns a GeminiClient instance' do
+        client = described_class.build(model:, type:, vendor: :google)
+        expect(client).to be_a(LlmConductor::Clients::GeminiClient)
+        expect(client.model).to eq(model)
+        expect(client.type).to eq(type)
+      end
+    end
+
     context 'when vendor is not specified' do
       context 'and model starts with "claude"' do
         let(:model) { 'claude-3-5-sonnet-20241022' }
@@ -57,7 +75,18 @@ RSpec.describe LlmConductor::ClientFactory do
         end
       end
 
-      context 'and model does not start with "gpt" or "claude"' do
+      context 'and model starts with "gemini"' do
+        let(:model) { 'gemini-1.5-pro' }
+
+        it 'returns a GeminiClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::GeminiClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model does not start with "gpt", "claude", or "gemini"' do
         let(:model) { 'llama2' }
 
         it 'returns an OllamaClient instance' do
@@ -83,7 +112,7 @@ RSpec.describe LlmConductor::ClientFactory do
         expect do
           described_class.build(model:, type:, vendor: :unsupported)
         end.to raise_error(ArgumentError,
-                           'Unsupported vendor: unsupported. Supported vendors: anthropic, openai, openrouter, ollama')
+                           'Unsupported vendor: unsupported. Supported vendors: anthropic, openai, openrouter, ollama, gemini')
       end
     end
   end
