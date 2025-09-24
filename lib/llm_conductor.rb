@@ -12,6 +12,7 @@ require_relative 'llm_conductor/clients/anthropic_client'
 require_relative 'llm_conductor/clients/gpt_client'
 require_relative 'llm_conductor/clients/ollama_client'
 require_relative 'llm_conductor/clients/openrouter_client'
+require_relative 'llm_conductor/clients/gemini_client'
 require_relative 'llm_conductor/client_factory'
 
 # LLM Conductor provides a unified interface for multiple Language Model providers
