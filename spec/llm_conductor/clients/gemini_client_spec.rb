@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::GeminiClient do
-  let(:model) { 'gemini-1.5-flash' }
+  let(:model) { 'gemini-2.5-flash' }
   let(:type) { :summarize_description }
   let(:client) { described_class.new(model:, type:) }
 

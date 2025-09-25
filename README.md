@@ -160,21 +160,21 @@ response = LlmConductor.generate(
 ### Google Gemini (Automatic for Gemini models)
 ```ruby
 response = LlmConductor.generate(
-  model: 'gemini-1.5-flash',  # Auto-detects Gemini
+  model: 'gemini-2.5-flash',  # Auto-detects Gemini
   prompt: 'Your prompt here'
 )
 
 # Or explicitly specify vendor
 response = LlmConductor.generate(
-  model: 'gemini-1.5-flash',
+  model: 'gemini-2.5-flash',
   vendor: :gemini,
   prompt: 'Your prompt here'
 )
 ```
 
 **Supported Gemini Models:**
-- `gemini-1.5-flash` (Latest Gemini 1.5 Flash)
-- `gemini-1.5-flash` (Gemini 1.5 Flash)
+- `gemini-2.5-flash` (Latest Gemini 2.5 Flash)
+- `gemini-2.5-flash` (Gemini 2.5 Flash)
 - `gemini-2.0-flash` (Gemini 2.0 Flash)
 
 **Why Choose Gemini?**
@@ -198,7 +198,7 @@ The gem automatically detects the appropriate provider based on model names:
 
 - **OpenAI**: Models starting with `gpt-` (e.g., `gpt-4`, `gpt-3.5-turbo`)
 - **Anthropic**: Models starting with `claude-` (e.g., `claude-3-5-sonnet-20241022`)
-- **Google Gemini**: Models starting with `gemini-` (e.g., `gemini-1.5-flash`, `gemini-2.0-flash`)
+- **Google Gemini**: Models starting with `gemini-` (e.g., `gemini-2.5-flash`, `gemini-2.0-flash`)
 - **Ollama**: All other models (e.g., `llama3.2`, `mistral`, `codellama`)
 
 You can also explicitly specify the vendor:
