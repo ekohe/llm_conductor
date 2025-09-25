@@ -101,7 +101,49 @@ LlmConductor.configure do |config|
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
+
+  # Logging configuration
+  config.log_level = :info  # Options: :debug, :info, :warn, :error, :fatal
+                            # Default: :warn (quiet - only shows warnings and errors)
 end
+```
+
+### Logging Configuration
+
+LLM Conductor includes configurable logging to help with debugging and monitoring:
+
+```ruby
+LlmConductor.configure do |config|
+  # Set logging level (default: :warn)
+  config.log_level = :info
+end
+```
+
+**Log Levels (from most to least verbose):**
+- `:debug` - Show all logs including debug information
+- `:info` - Show informational messages (recommended for development)
+- `:warn` - Show warnings and errors only (default - recommended for production)
+- `:error` - Show errors and fatal messages only
+- `:fatal` - Show only fatal errors
+
+**What gets logged:**
+- Client creation (vendor, model, prompt type)
+- API call information
+- Error messages and debugging details
+
+**Examples:**
+```ruby
+# Quiet (production) - only warnings and errors
+config.log_level = :warn  # Default
+
+# Development - see all activity
+config.log_level = :info
+
+# Debugging - maximum verbosity
+config.log_level = :debug
+
+# Almost silent - only critical errors
+config.log_level = :error
 ```
 
 ### Environment Variables
