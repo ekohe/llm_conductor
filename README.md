@@ -1,10 +1,10 @@
 # LLM Conductor
 
-A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, and Ollama with automatic vendor detection
+🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, and Ollama with automatic vendor detection
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
@@ -98,6 +98,10 @@ LlmConductor.configure do |config|
     api_key: ENV['ANTHROPIC_API_KEY']
   )
 
+  config.gemini(
+    api_key: ENV['GEMINI_API_KEY']
+  )
+
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
@@ -111,6 +115,7 @@ The gem automatically detects these environment variables:
 - `OPENAI_API_KEY` - OpenAI API key
 - `OPENAI_ORG_ID` - OpenAI organization ID (optional)
 - `ANTHROPIC_API_KEY` - Anthropic API key
+- `GEMINI_API_KEY` - Google Gemini API key
 - `OLLAMA_ADDRESS` - Ollama server address
 
 ## Supported Providers & Models
@@ -152,10 +157,37 @@ response = LlmConductor.generate(
 - **Safety**: Built with safety and helpfulness in mind
 - **Cost Effective**: Competitive pricing for high-quality outputs
 
-### Ollama (Default for non-GPT/Claude models)
+### Google Gemini (Automatic for Gemini models)
 ```ruby
 response = LlmConductor.generate(
-  model: 'llama3.2',  # Auto-detects Ollama for non-GPT/Claude models
+  model: 'gemini-2.5-flash',  # Auto-detects Gemini
+  prompt: 'Your prompt here'
+)
+
+# Or explicitly specify vendor
+response = LlmConductor.generate(
+  model: 'gemini-2.5-flash',
+  vendor: :gemini,
+  prompt: 'Your prompt here'
+)
+```
+
+**Supported Gemini Models:**
+- `gemini-2.5-flash` (Latest Gemini 2.5 Flash)
+- `gemini-2.5-flash` (Gemini 2.5 Flash)
+- `gemini-2.0-flash` (Gemini 2.0 Flash)
+
+**Why Choose Gemini?**
+- **Multimodal**: Native support for text, images, and other modalities
+- **Long Context**: Massive context windows for large documents
+- **Fast Performance**: Optimized for speed and efficiency
+- **Google Integration**: Seamless integration with Google services
+- **Competitive Pricing**: Cost-effective for high-volume usage
+
+### Ollama (Default for non-GPT/Claude/Gemini models)
+```ruby
+response = LlmConductor.generate(
+  model: 'llama3.2',  # Auto-detects Ollama for non-GPT/Claude/Gemini models
   prompt: 'Your prompt here'
 )
 ```
@@ -166,6 +198,7 @@ The gem automatically detects the appropriate provider based on model names:
 
 - **OpenAI**: Models starting with `gpt-` (e.g., `gpt-4`, `gpt-3.5-turbo`)
 - **Anthropic**: Models starting with `claude-` (e.g., `claude-3-5-sonnet-20241022`)
+- **Google Gemini**: Models starting with `gemini-` (e.g., `gemini-2.5-flash`, `gemini-2.0-flash`)
 - **Ollama**: All other models (e.g., `llama3.2`, `mistral`, `codellama`)
 
 You can also explicitly specify the vendor:
