@@ -4,7 +4,7 @@
 module LlmConductor
   # Configuration class for managing API keys, endpoints, and default settings
   class Configuration
-    attr_accessor :default_model, :default_vendor, :timeout, :max_retries, :retry_delay
+    attr_accessor :default_model, :default_vendor, :timeout, :max_retries, :retry_delay, :log_level
     attr_reader :providers
 
     def initialize
@@ -14,6 +14,7 @@ module LlmConductor
       @timeout = 30
       @max_retries = 3
       @retry_delay = 1.0
+      @log_level = :warn
 
       # Provider configurations
       @providers = {}
