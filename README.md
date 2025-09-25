@@ -143,13 +143,6 @@ response = LlmConductor.generate(
 )
 ```
 
-**Supported Claude Models:**
-- `claude-3-5-sonnet-20241022` (Latest Claude 3.5 Sonnet)
-- `claude-3-5-haiku-20241022` (Claude 3.5 Haiku)
-- `claude-3-opus-20240229` (Claude 3 Opus)
-- `claude-3-sonnet-20240229` (Claude 3 Sonnet)
-- `claude-3-haiku-20240307` (Claude 3 Haiku)
-
 **Why Choose Claude?**
 - **Superior Reasoning**: Excellent for complex analysis and problem-solving
 - **Code Generation**: Outstanding performance for programming tasks
