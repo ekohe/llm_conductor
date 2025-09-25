@@ -56,6 +56,14 @@ module LlmConductor
       }
     end
 
+    # Configure Google Gemini provider
+    def gemini(api_key: nil, **options)
+      @providers[:gemini] = {
+        api_key: api_key || ENV['GEMINI_API_KEY'],
+        **options
+      }
+    end
+
     # Get provider configuration
     def provider_config(provider)
       @providers[provider.to_sym] || {}
@@ -94,6 +102,14 @@ module LlmConductor
       ollama(base_url: value)
     end
 
+    def gemini_api_key
+      provider_config(:gemini)[:api_key]
+    end
+
+    def gemini_api_key=(value)
+      gemini(api_key: value)
+    end
+
     private
 
     def setup_defaults_from_env
@@ -101,6 +117,7 @@ module LlmConductor
       anthropic if ENV['ANTHROPIC_API_KEY']
       openai if ENV['OPENAI_API_KEY']
       openrouter if ENV['OPENROUTER_API_KEY']
+      gemini if ENV['GEMINI_API_KEY']
       ollama # Always configure Ollama with default URL
     end
   end
