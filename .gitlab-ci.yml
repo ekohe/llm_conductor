@@ -5,6 +5,7 @@ image: ruby:3.4.1
 variables:
   DEBIAN_FRONTEND: noninteractive
   BUNDLE_PATH: cache
+  BUNDLE_FROZEN: "true"
 
 # Cache gems between builds
 cache: &global_cache
@@ -24,7 +25,7 @@ before_script:
   - which ruby
   - gem install bundler --no-document
   - bundle version
-  - bundle install --frozen --jobs $(nproc)
+  - bundle install --jobs $(nproc)
 
 # Test stage - runs both RSpec and RuboCop via rake
 test:
