@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'stringio'
 
 RSpec.describe LlmConductor do
   describe 'module constants' do
@@ -98,6 +99,98 @@ RSpec.describe LlmConductor do
       expect { raise described_class::Error, 'Test error' }.to raise_error(
         described_class::Error, 'Test error'
       )
+    end
+  end
+
+  describe 'logging integration' do
+    let(:string_io) { StringIO.new }
+    let(:mock_client) { instance_double(LlmConductor::Clients::GptClient) }
+    let(:mock_response) do
+      LlmConductor::Response.new(
+        output: 'Test response',
+        model: 'gpt-3.5-turbo',
+        input_tokens: 10,
+        output_tokens: 20
+      )
+    end
+
+    before do
+      # Reset logger before each test
+      LlmConductor::Logger.instance_variable_set(:@instance, nil)
+
+      # Mock client behavior for all client types
+      allow(LlmConductor::Clients::GptClient).to receive(:new).and_return(mock_client)
+      allow(LlmConductor::Clients::AnthropicClient).to receive(:new).and_return(mock_client)
+      allow(LlmConductor::Clients::OllamaClient).to receive(:new).and_return(mock_client)
+      allow(mock_client).to receive(:generate_simple).and_return(mock_response)
+    end
+
+    after do
+      LlmConductor::Logger.instance_variable_set(:@instance, nil)
+    end
+
+    context 'when log level allows info messages' do
+      before do
+        # Configure logger to write to StringIO for testing
+        allow(described_class.configuration).to receive(:log_level).and_return(:info)
+        logger_instance = ::Logger.new(string_io)
+        logger_instance.level = ::Logger::INFO
+        allow(LlmConductor::Logger).to receive(:instance).and_return(logger_instance)
+      end
+
+      it 'logs simple prompt generation information' do
+        described_class.generate(
+          model: 'gpt-3.5-turbo',
+          prompt: 'Test prompt'
+        )
+
+        log_output = string_io.string
+        expect(log_output).to include('INFO')
+        expect(log_output).to include('Vendor: openai')
+        expect(log_output).to include('Model: gpt-3.5-turbo')
+      end
+
+      it 'logs with auto-detected vendor' do
+        described_class.generate(
+          model: 'claude-3-5-sonnet-20241022',
+          prompt: 'Test prompt'
+        )
+
+        log_output = string_io.string
+        expect(log_output).to include('Vendor: anthropic')
+        expect(log_output).to include('Model: claude-3-5-sonnet-20241022')
+      end
+
+      it 'logs with explicit vendor' do
+        described_class.generate(
+          model: 'custom-model',
+          prompt: 'Test prompt',
+          vendor: :ollama
+        )
+
+        log_output = string_io.string
+        expect(log_output).to include('Vendor: ollama')
+        expect(log_output).to include('Model: custom-model')
+      end
+    end
+
+    context 'when log level blocks info messages' do
+      before do
+        # Set log level to error (higher than info)
+        allow(described_class.configuration).to receive(:log_level).and_return(:error)
+        error_logger = ::Logger.new(string_io)
+        error_logger.level = ::Logger::ERROR
+        allow(LlmConductor::Logger).to receive(:instance).and_return(error_logger)
+      end
+
+      it 'does not log info messages' do
+        described_class.generate(
+          model: 'gpt-3.5-turbo',
+          prompt: 'Test prompt'
+        )
+
+        expect(string_io.string).to be_empty
+      end
     end
   end
 end

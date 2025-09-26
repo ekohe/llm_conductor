@@ -1,15 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'logger'
-
 module LlmConductor
   # Factory class for creating appropriate LLM client instances based on model and vendor
   class ClientFactory
     def self.build(model:, type:, vendor: nil)
       vendor ||= determine_vendor(model)
       client_class = client_class_for_vendor(vendor)
-
-      Logger.info "Vendor: #{vendor}, Model: #{model}, Type: #{type}"
 
       client_class.new(model:, type:)
     end
