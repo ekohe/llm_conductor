@@ -24,13 +24,13 @@ before_script:
   - which ruby
   - gem install bundler --no-document
   - bundle version
-  - bundle install --jobs $(nproc)
+  - bundle install --frozen --jobs $(nproc)
 
-# Test stage
-rspec:
+# Test stage - runs both RSpec and RuboCop via rake
+test:
   stage: test
   script:
-    - bundle exec rspec
+    - bundle exec rake
   coverage: '/\(\d+\.\d+\%\) covered/'
   artifacts:
     paths:
@@ -40,14 +40,6 @@ rspec:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_REF_NAME == "main"
 
-# Code quality with RuboCop
-rubocop:
-  stage: test
-  script:
-    - bundle exec rubocop
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
 
 # Build gem
 build_gem:
