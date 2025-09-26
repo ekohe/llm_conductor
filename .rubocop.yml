@@ -2,8 +2,6 @@
 plugins:
   - rubocop-performance
   - rubocop-rake
-
-require: 
   - rubocop-capybara
   - rubocop-factory_bot
   - rubocop-rspec
@@ -60,7 +58,7 @@ RSpec/MultipleDescribes:
 RSpec/SpecFilePathFormat:
   Enabled: false
 
-RSpec/FilePath:
+RSpec/SpecFilePathSuffix:
   Enabled: false
 
 RSpec/UnspecifiedException:
