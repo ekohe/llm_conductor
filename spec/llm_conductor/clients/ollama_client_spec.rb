@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::OllamaClient do
   let(:model) { 'llama2' }
-  let(:type) { :featured_links }
+  let(:type) { :extract_links }
   let(:client) { described_class.new(model:, type:) }
 
   before do
@@ -109,14 +109,14 @@ RSpec.describe LlmConductor::Clients::OllamaClient do
       allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
     end
 
-    it 'generates complete response for featured links', :aggregate_failures do
+    it 'generates complete response for link extraction', :aggregate_failures do
       result = client.generate(data:)
 
       expect(result).to be_a(LlmConductor::Response)
       expect(result.output).to eq('["https://example.com/about"]')
       expect(result.input_tokens).to eq(2)
       expect(result.output_tokens).to eq(2)
-      expect(result.metadata[:prompt]).to include('analyzing a webpage\'s HTML content')
+      expect(result.metadata[:prompt]).to include('Analyze the provided HTML content and extract links')
     end
   end
 end

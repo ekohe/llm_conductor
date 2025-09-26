@@ -15,9 +15,10 @@ RSpec.describe LlmConductor do
 
     it 'defines supported prompt types' do
       expect(described_class::SUPPORTED_PROMPT_TYPES).to eq(%i[
-                                                              featured_links
-                                                              summarize_htmls
-                                                              summarize_description
+                                                              extract_links
+                                                              analyze_content
+                                                              summarize_text
+                                                              classify_content
                                                               custom
                                                             ])
     end
@@ -25,7 +26,7 @@ RSpec.describe LlmConductor do
 
   describe '.build_client' do
     let(:model) { 'gpt-4o-mini' }
-    let(:type) { :summarize_description }
+    let(:type) { :summarize_text }
 
     it 'returns a BaseClient instance' do
       client = described_class.build_client(model:, type:)

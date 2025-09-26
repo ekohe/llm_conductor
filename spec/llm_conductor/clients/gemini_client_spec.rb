@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::GeminiClient do
   let(:model) { 'gemini-2.5-flash' }
-  let(:type) { :summarize_description }
+  let(:type) { :analyze_content }
   let(:client) { described_class.new(model:, type:) }
 
   before do
@@ -17,7 +17,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
     end
 
     it 'includes Prompts module through inheritance' do
-      expect(client).to respond_to(:prompt_summarize_description)
+      expect(client).to respond_to(:prompt_analyze_content)
     end
   end
 
@@ -125,7 +125,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
   end
 
   describe 'integration with base class' do
-    let(:data) { { name: 'TestCorp', description: 'AI company' } }
+    let(:data) { { content: 'TestCorp is an AI company that develops innovative solutions.' } }
     let(:mock_gemini_client) { double('Gemini') }
     let(:api_response) do
       {

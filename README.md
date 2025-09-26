@@ -52,14 +52,18 @@ puts response.estimated_cost   # Cost in USD
 ### 2. Template-Based Generation
 
 ```ruby
-# Use built-in templates with structured data
+# Use built-in text summarization template
 response = LlmConductor.generate(
   model: 'gpt-5-mini',
-  type: :summarize_description,
+  type: :summarize_text,
   data: {
-    name: 'Ekohe',
-    domain_name: 'ekohe.com',
-    description: 'An AI company specializing in...'
+    text: 'Ekohe (ee-koh-hee) means "boundless possibility." Our way is to make AI practical, achievable, and most importantly, useful for you — and we prove it every day. With almost 16 years of wins under our belt, a market-leading 24-hr design & development cycle, and 5 offices in the most vibrant cities in the world, we surf the seas of innovation. We create efficient, elegant, and scalable digital products — delivering the right interactive solutions to achieve your audience and business goals. We help you transform. We break new ground across the globe — from AI and ML automation that drives the enterprise, to innovative customer experiences and mobile apps for startups. Our special sauce is the care, curiosity, and dedication we offer to solve for your needs. We focus on your success and deliver the most impactful experiences in the most efficient manner. Our clients tell us we partner with them in a trusted and capable way, driving the right design and technical choices.',
+    max_length: '20 words',
+    style: 'professional and engaging',
+    focus_areas: ['core business', 'expertise', 'target market'],
+    audience: 'potential investors',
+    include_key_points: true,
+    output_format: 'paragraph'
   }
 )
 
@@ -67,7 +71,7 @@ response = LlmConductor.generate(
 if response.success?
   puts "Generated: #{response.output}"
   puts "Tokens: #{response.total_tokens}"
-  puts "Cost: $#{response.estimated_cost}"
+  puts "Cost: $#{response.estimated_cost || 'N/A (free model)'}"
 else
   puts "Error: #{response.metadata[:error]}"
 end
@@ -185,20 +189,6 @@ response = LlmConductor.generate(
 )
 ```
 
-**Supported Claude Models:**
-- `claude-3-5-sonnet-20241022` (Latest Claude 3.5 Sonnet)
-- `claude-3-5-haiku-20241022` (Claude 3.5 Haiku)
-- `claude-3-opus-20240229` (Claude 3 Opus)
-- `claude-3-sonnet-20240229` (Claude 3 Sonnet)
-- `claude-3-haiku-20240307` (Claude 3 Haiku)
-
-**Why Choose Claude?**
-- **Superior Reasoning**: Excellent for complex analysis and problem-solving
-- **Code Generation**: Outstanding performance for programming tasks
-- **Long Context**: Support for large documents and conversations
-- **Safety**: Built with safety and helpfulness in mind
-- **Cost Effective**: Competitive pricing for high-quality outputs
-
 ### Google Gemini (Automatic for Gemini models)
 ```ruby
 response = LlmConductor.generate(
@@ -213,18 +203,6 @@ response = LlmConductor.generate(
   prompt: 'Your prompt here'
 )
 ```
-
-**Supported Gemini Models:**
-- `gemini-2.5-flash` (Latest Gemini 2.5 Flash)
-- `gemini-2.5-flash` (Gemini 2.5 Flash)
-- `gemini-2.0-flash` (Gemini 2.0 Flash)
-
-**Why Choose Gemini?**
-- **Multimodal**: Native support for text, images, and other modalities
-- **Long Context**: Massive context windows for large documents
-- **Fast Performance**: Optimized for speed and efficiency
-- **Google Integration**: Seamless integration with Google services
-- **Competitive Pricing**: Cost-effective for high-volume usage
 
 ### Ollama (Default for non-GPT/Claude/Gemini models)
 ```ruby
