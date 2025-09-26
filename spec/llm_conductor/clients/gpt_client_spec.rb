@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::GptClient do
   let(:model) { 'gpt-4o-mini' }
-  let(:type) { :summarize_description }
+  let(:type) { :summarize_text }
   let(:client) { described_class.new(model:, type:) }
 
   before do
@@ -17,7 +17,7 @@ RSpec.describe LlmConductor::Clients::GptClient do
     end
 
     it 'includes Prompts module through inheritance' do
-      expect(client).to respond_to(:prompt_summarize_description)
+      expect(client).to respond_to(:prompt_summarize_text)
     end
   end
 
@@ -103,7 +103,7 @@ RSpec.describe LlmConductor::Clients::GptClient do
   end
 
   describe 'integration with base class' do
-    let(:data) { { name: 'TestCorp', description: 'AI company' } }
+    let(:data) { { text: 'TestCorp is an AI company specializing in machine learning solutions.' } }
     let(:mock_openai_client) { double('OpenAI::Client') }
     let(:api_response) do
       {

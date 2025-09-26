@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe LlmConductor::Clients::AnthropicClient do
   let(:model) { 'claude-3-5-sonnet-20241022' }
-  let(:type) { :summarize_description }
+  let(:type) { :summarize_text }
   let(:client) { described_class.new(model:, type:) }
 
   before do
@@ -17,7 +17,7 @@ RSpec.describe LlmConductor::Clients::AnthropicClient do
     end
 
     it 'includes Prompts module through inheritance' do
-      expect(client).to respond_to(:prompt_summarize_description)
+      expect(client).to respond_to(:prompt_summarize_text)
     end
   end
 
@@ -101,7 +101,7 @@ RSpec.describe LlmConductor::Clients::AnthropicClient do
   end
 
   describe 'integration with base class' do
-    let(:data) { { name: 'TestCorp', description: 'AI company' } }
+    let(:data) { { text: 'TestCorp is an AI company specializing in machine learning solutions.' } }
     let(:mock_anthropic_client) { double('Anthropic::Client') }
     let(:mock_response) { double('response', content: [double('content', text: 'Claude response')]) }
     let(:mock_encoder) { double('encoder', encode: %w[token1 token2 token3]) }

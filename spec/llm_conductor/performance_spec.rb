@@ -18,7 +18,7 @@ RSpec.describe 'LlmConductor Performance' do
     it 'creates clients efficiently' do
       start_time = Time.zone.now
       100.times do
-        LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+        LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
       end
       elapsed_time = Time.zone.now - start_time
 
@@ -27,7 +27,7 @@ RSpec.describe 'LlmConductor Performance' do
     end
 
     it 'memoizes expensive operations' do
-      client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+      client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
 
       # First call to client method (should create and memoize)
       start_time = Time.zone.now
@@ -55,7 +55,7 @@ RSpec.describe 'LlmConductor Performance' do
 
     it 'generates prompts efficiently for large data' do
       start_time = Time.zone.now
-      test_class.prompt_featured_links(large_html_data)
+      test_class.prompt_extract_links(large_html_data)
       elapsed_time = Time.zone.now - start_time
 
       # Should generate prompt for large HTML in under 0.1 seconds
@@ -82,7 +82,7 @@ RSpec.describe 'LlmConductor Performance' do
   end
 
   describe 'token calculation performance' do
-    let(:client) { LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description) }
+    let(:client) { LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text) }
     let(:large_content) { 'word ' * 10_000 }
     let(:mock_encoder) { double('encoder') }
 
@@ -153,7 +153,7 @@ RSpec.describe 'LlmConductor Performance' do
       # Create new clients - should not accumulate excessive memory
       new_clients = []
       100.times do
-        new_clients << LlmConductor.build_client(model: 'llama2', type: :featured_links)
+        new_clients << LlmConductor.build_client(model: 'llama2', type: :extract_links)
       end
 
       expect(new_clients.length).to eq(100)
@@ -169,7 +169,7 @@ RSpec.describe 'LlmConductor Performance' do
       # Create clients concurrently
       10.times do
         threads << Thread.new do
-          client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_description)
+          client = LlmConductor.build_client(model: 'gpt-4o-mini', type: :summarize_text)
           mutex.synchronize { clients << client }
         end
       end
