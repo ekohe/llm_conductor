@@ -117,5 +117,4 @@ RSpec.describe LlmConductor::ClientFactory do
       end
     end
   end
-
 end
