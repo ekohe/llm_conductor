@@ -147,20 +147,6 @@ response = LlmConductor.generate(
 )
 ```
 
-**Supported Claude Models:**
-- `claude-3-5-sonnet-20241022` (Latest Claude 3.5 Sonnet)
-- `claude-3-5-haiku-20241022` (Claude 3.5 Haiku)
-- `claude-3-opus-20240229` (Claude 3 Opus)
-- `claude-3-sonnet-20240229` (Claude 3 Sonnet)
-- `claude-3-haiku-20240307` (Claude 3 Haiku)
-
-**Why Choose Claude?**
-- **Superior Reasoning**: Excellent for complex analysis and problem-solving
-- **Code Generation**: Outstanding performance for programming tasks
-- **Long Context**: Support for large documents and conversations
-- **Safety**: Built with safety and helpfulness in mind
-- **Cost Effective**: Competitive pricing for high-quality outputs
-
 ### Google Gemini (Automatic for Gemini models)
 ```ruby
 response = LlmConductor.generate(
@@ -175,18 +161,6 @@ response = LlmConductor.generate(
   prompt: 'Your prompt here'
 )
 ```
-
-**Supported Gemini Models:**
-- `gemini-2.5-flash` (Latest Gemini 2.5 Flash)
-- `gemini-2.5-flash` (Gemini 2.5 Flash)
-- `gemini-2.0-flash` (Gemini 2.0 Flash)
-
-**Why Choose Gemini?**
-- **Multimodal**: Native support for text, images, and other modalities
-- **Long Context**: Massive context windows for large documents
-- **Fast Performance**: Optimized for speed and efficiency
-- **Google Integration**: Seamless integration with Google services
-- **Competitive Pricing**: Cost-effective for high-volume usage
 
 ### Ollama (Default for non-GPT/Claude/Gemini models)
 ```ruby
