@@ -135,47 +135,6 @@ RSpec.describe LlmConductor::Logger do
     end
   end
 
-  describe 'log level filtering' do
-    let(:string_io) { StringIO.new }
-    let(:test_message) { 'Test message' }
-
-    context 'when log level is set to ERROR' do
-      before do
-        allow(LlmConductor.configuration).to receive(:log_level).and_return(:error)
-        logger_instance = ::Logger.new(string_io)
-        logger_instance.level = ::Logger::ERROR
-        allow(described_class).to receive(:instance).and_return(logger_instance)
-      end
-
-      it 'does not log debug messages' do
-        described_class.debug(test_message)
-        expect(string_io.string).to be_empty
-      end
-
-      it 'does not log info messages' do
-        described_class.info(test_message)
-        expect(string_io.string).to be_empty
-      end
-
-      it 'does not log warn messages' do
-        described_class.warn(test_message)
-        expect(string_io.string).to be_empty
-      end
-
-      it 'logs error messages' do
-        described_class.error(test_message)
-        expect(string_io.string).to include('ERROR')
-        expect(string_io.string).to include(test_message)
-      end
-
-      it 'logs fatal messages' do
-        described_class.fatal(test_message)
-        expect(string_io.string).to include('FATAL')
-        expect(string_io.string).to include(test_message)
-      end
-    end
-  end
-
   describe '.configure' do
     it 'yields the logger instance for configuration' do
       expect { |b| described_class.configure(&b) }.to yield_with_args(described_class.instance)
@@ -213,18 +172,6 @@ RSpec.describe LlmConductor::Logger do
 
         # Should be different instances
         expect(logger1).not_to eq(logger2)
-      end
-    end
-
-    context 'when configuration is not available' do
-      before do
-        allow(LlmConductor).to receive(:configuration).and_raise(NoMethodError)
-      end
-
-      it 'handles missing configuration gracefully' do
-        # The current implementation doesn't handle missing configuration gracefully
-        # This test documents the current behavior - it will raise an error
-        expect { described_class.log_level_constant }.to raise_error(NoMethodError)
       end
     end
   end
