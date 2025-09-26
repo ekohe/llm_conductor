@@ -135,7 +135,7 @@ end
 - `:fatal` - Show only fatal errors
 
 **What gets logged:**
-- Client creation (vendor, model, prompt type)
+- Client creation (vendor, model)
 - API call information
 - Error messages and debugging details
 
