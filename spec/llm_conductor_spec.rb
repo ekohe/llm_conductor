@@ -103,26 +103,9 @@ RSpec.describe LlmConductor do
   end
 
   describe 'logging integration' do
-    let(:string_io) { StringIO.new }
-    let(:mock_client) { instance_double(LlmConductor::Clients::GptClient) }
-    let(:mock_response) do
-      LlmConductor::Response.new(
-        output: 'Test response',
-        model: 'gpt-3.5-turbo',
-        input_tokens: 10,
-        output_tokens: 20
-      )
-    end
-
+    # Reset logger before each test
     before do
-      # Reset logger before each test
       LlmConductor::Logger.instance_variable_set(:@instance, nil)
-
-      # Mock client behavior for all client types
-      allow(LlmConductor::Clients::GptClient).to receive(:new).and_return(mock_client)
-      allow(LlmConductor::Clients::AnthropicClient).to receive(:new).and_return(mock_client)
-      allow(LlmConductor::Clients::OllamaClient).to receive(:new).and_return(mock_client)
-      allow(mock_client).to receive(:generate_simple).and_return(mock_response)
     end
 
     after do
@@ -130,12 +113,29 @@ RSpec.describe LlmConductor do
     end
 
     context 'when log level allows info messages' do
+      let(:string_io) { StringIO.new }
+      let(:mock_client) { instance_double(LlmConductor::Clients::GptClient) }
+      let(:mock_response) do
+        LlmConductor::Response.new(
+          output: 'Test response for info logging',
+          model: 'gpt-3.5-turbo',
+          input_tokens: 15,
+          output_tokens: 25
+        )
+      end
+
       before do
         # Configure logger to write to StringIO for testing
         allow(described_class.configuration).to receive(:log_level).and_return(:info)
         logger_instance = ::Logger.new(string_io)
         logger_instance.level = ::Logger::INFO
         allow(LlmConductor::Logger).to receive(:instance).and_return(logger_instance)
+
+        # Mock client behavior for all client types
+        allow(LlmConductor::Clients::GptClient).to receive(:new).and_return(mock_client)
+        allow(LlmConductor::Clients::AnthropicClient).to receive(:new).and_return(mock_client)
+        allow(LlmConductor::Clients::OllamaClient).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:generate_simple).and_return(mock_response)
       end
 
       it 'logs simple prompt generation information' do
@@ -175,12 +175,29 @@ RSpec.describe LlmConductor do
     end
 
     context 'when log level blocks info messages' do
+      let(:string_io) { StringIO.new }
+      let(:mock_client) { instance_double(LlmConductor::Clients::OllamaClient) }
+      let(:mock_response) do
+        LlmConductor::Response.new(
+          output: 'Test response for blocked logging',
+          model: 'llama2',
+          input_tokens: 8,
+          output_tokens: 12
+        )
+      end
+
       before do
         # Set log level to error (higher than info)
         allow(described_class.configuration).to receive(:log_level).and_return(:error)
         error_logger = ::Logger.new(string_io)
         error_logger.level = ::Logger::ERROR
         allow(LlmConductor::Logger).to receive(:instance).and_return(error_logger)
+
+        # Mock client behavior for all client types
+        allow(LlmConductor::Clients::GptClient).to receive(:new).and_return(mock_client)
+        allow(LlmConductor::Clients::AnthropicClient).to receive(:new).and_return(mock_client)
+        allow(LlmConductor::Clients::OllamaClient).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:generate_simple).and_return(mock_response)
       end
 
       it 'does not log info messages' do
