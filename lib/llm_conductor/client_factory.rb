@@ -6,7 +6,6 @@ module LlmConductor
     def self.build(model:, type:, vendor: nil)
       vendor ||= determine_vendor(model)
       client_class = client_class_for_vendor(vendor)
-
       client_class.new(model:, type:)
     end
 
