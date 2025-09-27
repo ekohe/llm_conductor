@@ -5,6 +5,7 @@ image: ruby:3.4.1
 variables:
   DEBIAN_FRONTEND: noninteractive
   BUNDLE_PATH: cache
+  BUNDLE_FROZEN: "true"
 
 # Cache gems between builds
 cache: &global_cache
@@ -26,11 +27,11 @@ before_script:
   - bundle version
   - bundle install --jobs $(nproc)
 
-# Test stage
-rspec:
+# Test stage - runs both RSpec and RuboCop via rake
+test:
   stage: test
   script:
-    - bundle exec rspec
+    - bundle exec rake
   coverage: '/\(\d+\.\d+\%\) covered/'
   artifacts:
     paths:
@@ -40,14 +41,6 @@ rspec:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_REF_NAME == "main"
 
-# Code quality with RuboCop
-rubocop:
-  stage: test
-  script:
-    - bundle exec rubocop
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
 
 # Build gem
 build_gem:
