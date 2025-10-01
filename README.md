@@ -160,7 +160,7 @@ config.logger = Logger.new('log/llm_conductor.log')
 config.logger.level = Logger::WARN
 
 # No logging (default if not configured)
-# config.logger = nil  # or simply don't set it
+config.logger = nil  # or simply don't set it
 ```
 
 ### Environment Variables
