@@ -44,7 +44,6 @@ module LlmConductor
     def generate_simple_prompt(model:, prompt:, vendor:)
       model ||= configuration.default_model
       vendor ||= ClientFactory.determine_vendor(model)
-
       client_class = client_class_for_vendor(vendor)
       client = client_class.new(model:, type: :direct)
       client.generate_simple(prompt:)
