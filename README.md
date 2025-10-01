@@ -110,48 +110,57 @@ LlmConductor.configure do |config|
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
 
-  # Logging configuration
-  config.log_level = :info  # Options: :debug, :info, :warn, :error, :fatal
-                            # Default: :warn (quiet - only shows warnings and errors)
+  # Optional: Configure custom logger
+  config.logger = Logger.new($stdout)                  # Log to console
+  config.logger = Logger.new('log/llm_conductor.log')  # Log to file
+  config.logger = Rails.logger                         # Use Rails logger (in Rails apps)
 end
 ```
 
 ### Logging Configuration
 
-LLM Conductor includes configurable logging to help with debugging and monitoring:
+LLM Conductor supports flexible logging using Ruby's built-in Logger class:
 
 ```ruby
 LlmConductor.configure do |config|
-  # Set logging level (default: :warn)
-  config.log_level = :info
+  # Option 1: Log to console (development)
+  config.logger = Logger.new($stdout)
+  config.logger.level = Logger::INFO
+
+  # Option 2: Log to file (production)
+  config.logger = Logger.new('log/llm_conductor.log')
+  config.logger.level = Logger::WARN
+
+  # Option 3: Use Rails logger (Rails apps)
+  config.logger = Rails.logger
+
+  # Option 4: Custom logger with formatting
+  config.logger = Logger.new($stderr).tap do |logger|
+    logger.level = Logger::DEBUG
+    logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
+  end
 end
 ```
 
-**Log Levels (from most to least verbose):**
-- `:debug` - Show all logs including debug information
-- `:info` - Show informational messages (recommended for development)
-- `:warn` - Show warnings and errors only (default - recommended for production)
-- `:error` - Show errors and fatal messages only
-- `:fatal` - Show only fatal errors
 
 **What gets logged:**
-- Client creation (vendor, model)
-- API call information
+- Token usage (input/output tokens)
+- Vendor and model information
+- Generation timing and metadata
 - Error messages and debugging details
 
 **Examples:**
 ```ruby
-# Quiet (production) - only warnings and errors
-config.log_level = :warn  # Default
+# Development setup - see detailed information
+config.logger = Logger.new($stdout)
+config.logger.level = Logger::DEBUG
 
-# Development - see all activity
-config.log_level = :info
+# Production setup - minimal logging
+config.logger = Logger.new('log/llm_conductor.log')
+config.logger.level = Logger::WARN
 
-# Debugging - maximum verbosity
-config.log_level = :debug
-
-# Almost silent - only critical errors
-config.log_level = :error
+# No logging (default if not configured)
+# config.logger = nil  # or simply don't set it
 ```
 
 ### Environment Variables
