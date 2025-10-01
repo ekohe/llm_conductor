@@ -134,7 +134,6 @@ LlmConductor.configure do |config|
 
   # Option 4: Custom logger with formatting
   config.logger = Logger.new($stderr).tap do |logger|
-    logger.level = Logger::DEBUG
     logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
   end
 end
