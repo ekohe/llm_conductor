@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    llm_conductor (1.0.0)
+    llm_conductor (1.0.1)
       activesupport (>= 6.0)
       anthropic (~> 1.7)
       gemini-ai (~> 4.3)
@@ -201,4 +201,4 @@ DEPENDENCIES
   simplecov (~> 0.22)
 
 BUNDLED WITH
-   2.6.7
+   2.7.2
