@@ -14,7 +14,6 @@ require_relative 'llm_conductor/clients/ollama_client'
 require_relative 'llm_conductor/clients/openrouter_client'
 require_relative 'llm_conductor/clients/gemini_client'
 require_relative 'llm_conductor/client_factory'
-require_relative 'llm_conductor/logger'
 
 # LLM Conductor provides a unified interface for multiple Language Model providers
 # including OpenAI GPT, Anthropic Claude, Google Gemini, OpenRouter, and Ollama
@@ -45,7 +44,7 @@ module LlmConductor
     def generate_simple_prompt(model:, prompt:, vendor:)
       model ||= configuration.default_model
       vendor ||= ClientFactory.determine_vendor(model)
-      Logger.info "Vendor: #{vendor}, Model: #{model}"
+
       client_class = client_class_for_vendor(vendor)
       client = client_class.new(model:, type: :direct)
       client.generate_simple(prompt:)

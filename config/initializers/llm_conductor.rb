@@ -10,8 +10,8 @@ LlmConductor.configure do |config|
   config.timeout = 30
   config.max_retries = 3
   config.retry_delay = 1.0
-  config.log_level = :warn # Options: :debug, :info, :warn, :error, :fatal
-
+  # Use Ruby's built-in Logger class directly
+  config.logger = Logger.new($stdout)
   # Configure providers
   config.openai(
     api_key: ENV['OPENAI_API_KEY'],

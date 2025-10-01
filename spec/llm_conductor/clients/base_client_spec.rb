@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'stringio'
 
 RSpec.describe LlmConductor::Clients::BaseClient do
   let(:model) { 'test-model' }
@@ -24,6 +25,8 @@ RSpec.describe LlmConductor::Clients::BaseClient do
       allow(client).to receive(:generate_content).with(prompt).and_return(output)
       allow(client).to receive(:calculate_tokens).with(prompt).and_return(100)
       allow(client).to receive(:calculate_tokens).with(output).and_return(50)
+      allow(client).to receive(:configuration).and_return(LlmConductor.configuration)
+      allow(LlmConductor.configuration).to receive(:logger).and_return(nil)
     end
 
     it 'returns a Response object with output and token counts' do
@@ -112,6 +115,75 @@ RSpec.describe LlmConductor::Clients::BaseClient do
   describe '#client (private)' do
     it 'raises NotImplementedError in base class' do
       expect { client.send(:client) }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe 'logging integration' do
+    let(:string_io) { StringIO.new }
+    let(:logger) { Logger.new(string_io) }
+    let(:data) { { name: 'TestCorp' } }
+    let(:prompt) { 'Generated prompt content' }
+    let(:output) { 'Generated output content' }
+
+    before do
+      # Configure logger
+      allow(LlmConductor.configuration).to receive_messages(logger:)
+      logger.level = Logger::DEBUG
+
+      # Mock client methods
+      allow(client).to receive_messages(
+        build_prompt: prompt,
+        generate_content: output,
+        vendor_name: :test,
+        configuration: LlmConductor.configuration
+      )
+      allow(client).to receive(:calculate_tokens).and_return(100)
+    end
+
+    context 'when logger is configured' do
+      it 'logs debug information during generate' do
+        client.generate(data:)
+
+        log_output = string_io.string
+        expect(log_output).to include('DEBUG')
+        expect(log_output).to include('Vendor: test')
+        expect(log_output).to include('Model: test-model')
+        expect(log_output).to include('Output_tokens: 100')
+        expect(log_output).to include('Input_tokens: 100')
+      end
+
+      it 'logs debug information during generate_simple' do
+        client.generate_simple(prompt: 'Test prompt')
+
+        log_output = string_io.string
+        expect(log_output).to include('DEBUG')
+        expect(log_output).to include('Vendor: test')
+        expect(log_output).to include('Model: test-model')
+        expect(log_output).to include('Output_tokens: 100')
+        expect(log_output).to include('Input_tokens: 100')
+      end
+    end
+
+    context 'when logger is not configured' do
+      before do
+        allow(LlmConductor.configuration).to receive(:logger).and_return(nil)
+      end
+
+      it 'does not raise error when logger is nil' do
+        expect { client.generate(data:) }.not_to raise_error
+        expect { client.generate_simple(prompt: 'Test') }.not_to raise_error
+      end
+    end
+
+    context 'when log level blocks debug messages' do
+      before do
+        logger.level = Logger::ERROR
+      end
+
+      it 'does not log debug messages' do
+        client.generate(data:)
+        expect(string_io.string).to be_empty
+      end
     end
   end
 end
