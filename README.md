@@ -119,17 +119,15 @@ end
 
 ### Logging Configuration
 
-LLM Conductor supports flexible logging using Ruby's built-in Logger class:
+LLM Conductor supports flexible logging using Ruby's built-in Logger class. By default, when a logger is configured, it uses the DEBUG log level to provide detailed information during development.
 
 ```ruby
 LlmConductor.configure do |config|
-  # Option 1: Log to console (development)
+  # Option 1: Log to console (development) - uses DEBUG level by default
   config.logger = Logger.new($stdout)
-  config.logger.level = Logger::INFO
 
-  # Option 2: Log to file (production)
+  # Option 2: Log to file (production) - set appropriate level
   config.logger = Logger.new('log/llm_conductor.log')
-  config.logger.level = Logger::WARN
 
   # Option 3: Use Rails logger (Rails apps)
   config.logger = Rails.logger
@@ -142,22 +140,13 @@ LlmConductor.configure do |config|
 end
 ```
 
-
-**What gets logged:**
-- Token usage (input/output tokens)
-- Vendor and model information
-- Generation timing and metadata
-- Error messages and debugging details
-
 **Examples:**
 ```ruby
 # Development setup - see detailed information
 config.logger = Logger.new($stdout)
-config.logger.level = Logger::DEBUG
 
 # Production setup - minimal logging
 config.logger = Logger.new('log/llm_conductor.log')
-config.logger.level = Logger::WARN
 
 # No logging (default if not configured)
 config.logger = nil  # or simply don't set it
