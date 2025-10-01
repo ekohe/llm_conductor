@@ -109,6 +109,33 @@ LlmConductor.configure do |config|
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
+
+  # Optional: Configure custom logger
+  config.logger = Logger.new($stdout)                  # Log to stdout
+  config.logger = Logger.new('log/llm_conductor.log')  # Log to file
+  config.logger = Rails.logger                         # Use Rails logger (in Rails apps)
+end
+```
+
+### Logging Configuration
+
+LLM Conductor supports flexible logging using Ruby's built-in Logger class. By default, when a logger is configured, it uses the DEBUG log level to provide detailed information during development.
+
+```ruby
+LlmConductor.configure do |config|
+  # Option 1: Log to stdout - uses DEBUG level by default
+  config.logger = Logger.new($stdout)
+
+  # Option 2: Log to file - set appropriate level
+  config.logger = Logger.new('log/llm_conductor.log')
+
+  # Option 3: Use Rails logger (Rails apps)
+  config.logger = Rails.logger
+
+  # Option 4: Custom logger with formatting
+  config.logger = Logger.new($stderr).tap do |logger|
+    logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
+  end
 end
 ```
 

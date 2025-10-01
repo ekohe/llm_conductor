@@ -24,6 +24,12 @@ module LlmConductor
         output_text = generate_content(prompt)
         output_tokens = calculate_tokens(output_text || '')
 
+        # Logging AI request metadata if logger is set
+        configuration.logger&.debug(
+          "Vendor: #{vendor_name}, Model: #{@model} " \
+          "Output_tokens: #{output_tokens} Input_tokens: #{input_tokens}"
+        )
+
         build_response(output_text, input_tokens, output_tokens, { prompt: })
       rescue StandardError => e
         build_error_response(e)
@@ -34,6 +40,12 @@ module LlmConductor
         input_tokens = calculate_tokens(prompt)
         output_text = generate_content(prompt)
         output_tokens = calculate_tokens(output_text || '')
+
+        # Logging AI request metadata if logger is set
+        configuration.logger&.debug(
+          "Vendor: #{vendor_name}, Model: #{@model} " \
+          "Output_tokens: #{output_tokens} Input_tokens: #{input_tokens}"
+        )
 
         build_response(output_text, input_tokens, output_tokens)
       rescue StandardError => e
@@ -89,9 +101,17 @@ module LlmConductor
       # Build metadata for the response
       def build_metadata
         {
-          vendor: self.class.name.split('::').last.gsub('Client', '').downcase.to_sym,
+          vendor: vendor_name,
           timestamp: Time.now.utc.iso8601
         }
+      end
+
+      def vendor_name
+        self.class.name.split('::').last.gsub('Client', '').downcase.to_sym
+      end
+
+      def configuration
+        LlmConductor.configuration
       end
     end
   end
