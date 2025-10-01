@@ -24,7 +24,7 @@ module LlmConductor
         output_text = generate_content(prompt)
         output_tokens = calculate_tokens(output_text || '')
 
-        # Use built-in Ruby logger if configured
+        # Logging AI request metadata if logger is set
         configuration.logger&.debug(
           "Vendor: #{vendor_name}, Model: #{@model} " \
           "Output_tokens: #{output_tokens} Input_tokens: #{input_tokens}"
@@ -41,7 +41,7 @@ module LlmConductor
         output_text = generate_content(prompt)
         output_tokens = calculate_tokens(output_text || '')
 
-        # Use built-in Ruby logger if configured
+        # Logging AI request metadata if logger is set
         configuration.logger&.debug(
           "Vendor: #{vendor_name}, Model: #{@model} " \
           "Output_tokens: #{output_tokens} Input_tokens: #{input_tokens}"

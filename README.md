@@ -111,7 +111,7 @@ LlmConductor.configure do |config|
   )
 
   # Optional: Configure custom logger
-  config.logger = Logger.new($stdout)                  # Log to console
+  config.logger = Logger.new($stdout)                  # Log to stdout
   config.logger = Logger.new('log/llm_conductor.log')  # Log to file
   config.logger = Rails.logger                         # Use Rails logger (in Rails apps)
 end
@@ -123,10 +123,10 @@ LLM Conductor supports flexible logging using Ruby's built-in Logger class. By d
 
 ```ruby
 LlmConductor.configure do |config|
-  # Option 1: Log to console (development) - uses DEBUG level by default
+  # Option 1: Log to stdout - uses DEBUG level by default
   config.logger = Logger.new($stdout)
 
-  # Option 2: Log to file (production) - set appropriate level
+  # Option 2: Log to file - set appropriate level
   config.logger = Logger.new('log/llm_conductor.log')
 
   # Option 3: Use Rails logger (Rails apps)
@@ -137,18 +137,6 @@ LlmConductor.configure do |config|
     logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
   end
 end
-```
-
-**Examples:**
-```ruby
-# Development setup - see detailed information
-config.logger = Logger.new($stdout)
-
-# Production setup - minimal logging
-config.logger = Logger.new('log/llm_conductor.log')
-
-# No logging (default if not configured)
-config.logger = nil  # or simply don't set it
 ```
 
 ### Environment Variables
