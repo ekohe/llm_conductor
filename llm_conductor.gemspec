@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'A flexible Ruby gem for orchestrating multiple LLM providers with unified interface'
   spec.description = 'LLM Conductor provides a clean, unified interface for working with multiple Language Model ' \
-                     'providers including OpenAI GPT, OpenRouter, and Ollama. Features include prompt templating, ' \
-                     'token counting, and extensible client architecture.'
+                     'providers including OpenAI GPT, Anthropic Claude, Google Gemini, Groq, OpenRouter, and Ollama. ' \
+                     'Features include prompt templating, token counting, and extensible client architecture.'
   spec.homepage = 'https://github.com/ekohe/llm_conductor'
   spec.required_ruby_version = '>= 3.1.0'
 
@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport', '>= 6.0'
   spec.add_dependency 'anthropic', '~> 1.7'
   spec.add_dependency 'gemini-ai', '~> 4.3'
+  spec.add_dependency 'groq', '~> 0.3'
   spec.add_dependency 'ollama-ai', '~> 1.3'
   spec.add_dependency 'ruby-openai', '~> 7.0'
   spec.add_dependency 'tiktoken_ruby', '~> 0.0.7'

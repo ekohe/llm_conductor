@@ -3,6 +3,7 @@
 require 'active_support'
 require 'active_support/time'
 require 'active_support/time_with_zone'
+require 'groq'
 require 'llm_conductor'
 
 # Configure timezone for tests

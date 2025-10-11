@@ -64,6 +64,14 @@ module LlmConductor
       }
     end
 
+    # Configure Groq provider
+    def groq(api_key: nil, **options)
+      @providers[:groq] = {
+        api_key: api_key || ENV['GROQ_API_KEY'],
+        **options
+      }
+    end
+
     # Get provider configuration
     def provider_config(provider)
       @providers[provider.to_sym] || {}
@@ -110,6 +118,14 @@ module LlmConductor
       gemini(api_key: value)
     end
 
+    def groq_api_key
+      provider_config(:groq)[:api_key]
+    end
+
+    def groq_api_key=(value)
+      groq(api_key: value)
+    end
+
     private
 
     def setup_defaults_from_env
@@ -118,6 +134,7 @@ module LlmConductor
       openai if ENV['OPENAI_API_KEY']
       openrouter if ENV['OPENROUTER_API_KEY']
       gemini if ENV['GEMINI_API_KEY']
+      groq if ENV['GROQ_API_KEY']
       ollama # Always configure Ollama with default URL
     end
   end
