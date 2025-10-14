@@ -22,11 +22,9 @@ module LlmConductor
         groq: Clients::GroqClient
       }
 
-      client_classes[vendor] || raise(
-        ArgumentError,
-        "Unsupported vendor: #{vendor}. " \
-        'Supported vendors: anthropic, openai, openrouter, ollama, gemini, groq'
-      )
+      client_classes.fetch(vendor) do
+        raise ArgumentError, "Unsupported vendor: #{vendor}. Supported vendors: #{client_classes.keys.uniq.join(', ')}"
+      end
     end
 
     def self.determine_vendor(model)

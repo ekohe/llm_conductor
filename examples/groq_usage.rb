@@ -8,7 +8,7 @@ LlmConductor.configure do |config|
 end
 
 # Example 1: Using Groq with automatic model detection
-puts "=== Example 1: Automatic model detection ==="
+puts '=== Example 1: Automatic model detection ==='
 client = LlmConductor::ClientFactory.build(
   model: 'llama-3.1-70b-versatile',
   type: :summarize_text
@@ -20,7 +20,7 @@ data = {
         'optimized performance for production use cases.'
 }
 
-response = client.generate(data: data)
+response = client.generate(data:)
 puts "Model: #{response.model}"
 puts "Vendor: #{response.metadata[:vendor]}"
 puts "Input tokens: #{response.input_tokens}"
@@ -29,21 +29,21 @@ puts "Summary: #{response.output}"
 puts
 
 # Example 2: Using Groq with explicit vendor specification
-puts "=== Example 2: Explicit vendor specification ==="
+puts '=== Example 2: Explicit vendor specification ==='
 client = LlmConductor::ClientFactory.build(
   model: 'mixtral-8x7b-32768',
   type: :summarize_text,
   vendor: :groq
 )
 
-response = client.generate(data: data)
+response = client.generate(data:)
 puts "Model: #{response.model}"
 puts "Vendor: #{response.metadata[:vendor]}"
 puts "Summary: #{response.output}"
 puts
 
 # Example 3: Using Groq with simple generation
-puts "=== Example 3: Simple generation ==="
+puts '=== Example 3: Simple generation ==='
 client = LlmConductor::ClientFactory.build(
   model: 'gemma-7b-it',
   type: :summarize_text,
@@ -56,7 +56,7 @@ puts "Response: #{response.output}"
 puts
 
 # Example 4: Using different Groq models
-puts "=== Example 4: Different Groq models ==="
+puts '=== Example 4: Different Groq models ==='
 models = [
   'llama-3.1-70b-versatile',
   'mixtral-8x7b-32768',
@@ -66,11 +66,11 @@ models = [
 
 models.each do |model|
   client = LlmConductor::ClientFactory.build(
-    model: model,
+    model:,
     type: :summarize_text,
     vendor: :groq
   )
-  
+
   response = client.generate_simple(prompt: 'What is artificial intelligence?')
   puts "#{model}: #{response.output[0..100]}..."
   puts

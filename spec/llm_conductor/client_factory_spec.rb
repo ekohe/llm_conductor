@@ -166,7 +166,8 @@ RSpec.describe LlmConductor::ClientFactory do
           described_class.build(model:, type:, vendor: :unsupported)
         end.to raise_error(ArgumentError,
                            'Unsupported vendor: unsupported. ' \
-                           'Supported vendors: anthropic, openai, openrouter, ollama, gemini, groq')
+                           'Supported vendors: anthropic, claude, openai, gpt, openrouter, ' \
+                           'ollama, gemini, google, groq')
       end
     end
   end

@@ -9,7 +9,7 @@ module LlmConductor
       def generate_content(prompt)
         client.chat(
           messages: [{ role: 'user', content: prompt }],
-          model: model
+          model:
         ).dig('choices', 0, 'message', 'content')
       end
 

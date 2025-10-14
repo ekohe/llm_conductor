@@ -46,7 +46,7 @@ RSpec.describe LlmConductor::Clients::GroqClient do
 
       expect(mock_groq_client).to have_received(:chat).with(
         messages: [{ role: 'user', content: prompt }],
-        model: model
+        model:
       )
     end
 
