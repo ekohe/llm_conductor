@@ -26,13 +26,7 @@ RSpec.describe LlmConductor::Clients::GroqClient do
     let(:mock_groq_client) { double('Groq::Client') }
     let(:api_response) do
       {
-        'choices' => [
-          {
-            'message' => {
-              'content' => 'Generated response from Groq'
-            }
-          }
-        ]
+        'content' => 'Generated response from Groq'
       }
     end
 
@@ -45,8 +39,8 @@ RSpec.describe LlmConductor::Clients::GroqClient do
       client.send(:generate_content, prompt)
 
       expect(mock_groq_client).to have_received(:chat).with(
-        messages: [{ role: 'user', content: prompt }],
-        model:
+        [{ role: 'user', content: prompt }],
+        model_id: model
       )
     end
 
@@ -105,9 +99,7 @@ RSpec.describe LlmConductor::Clients::GroqClient do
     let(:mock_groq_client) { double('Groq::Client') }
     let(:api_response) do
       {
-        'choices' => [
-          { 'message' => { 'content' => 'Groq response' } }
-        ]
+        'content' => 'Groq response'
       }
     end
     let(:mock_encoder) { double('encoder', encode: %w[token1 token2 token3]) }

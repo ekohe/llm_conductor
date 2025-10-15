@@ -7,10 +7,9 @@ module LlmConductor
       private
 
       def generate_content(prompt)
-        client.chat(
-          messages: [{ role: 'user', content: prompt }],
-          model:
-        ).dig('choices', 0, 'message', 'content')
+        # Groq::Client.chat expects messages as positional arg, not keyword arg
+        messages = [{ role: 'user', content: prompt }]
+        client.chat(messages, model_id: model)['content']
       end
 
       def client
