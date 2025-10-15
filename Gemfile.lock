@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    llm_conductor (1.0.1)
+    llm_conductor (1.1.0)
       activesupport (>= 6.0)
       anthropic (~> 1.7)
       gemini-ai (~> 4.3)
