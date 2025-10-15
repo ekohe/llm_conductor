@@ -18,14 +18,13 @@ module LlmConductor
         openrouter: Clients::OpenrouterClient,
         ollama: Clients::OllamaClient,
         gemini: Clients::GeminiClient,
-        google: Clients::GeminiClient
+        google: Clients::GeminiClient,
+        groq: Clients::GroqClient
       }
 
-      client_classes[vendor] || raise(
-        ArgumentError,
-        "Unsupported vendor: #{vendor}. " \
-        'Supported vendors: anthropic, openai, openrouter, ollama, gemini'
-      )
+      client_classes.fetch(vendor) do
+        raise ArgumentError, "Unsupported vendor: #{vendor}. Supported vendors: #{client_classes.keys.uniq.join(', ')}"
+      end
     end
 
     def self.determine_vendor(model)
@@ -36,6 +35,8 @@ module LlmConductor
         :openai
       when /^gemini/i
         :gemini
+      when /^(llama|mixtral|gemma|qwen)/i
+        :groq
       else
         :ollama # Default to Ollama for non-specific model names
       end

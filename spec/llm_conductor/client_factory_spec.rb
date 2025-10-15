@@ -52,6 +52,15 @@ RSpec.describe LlmConductor::ClientFactory do
       end
     end
 
+    context 'when vendor is :groq' do
+      it 'returns a GroqClient instance' do
+        client = described_class.build(model:, type:, vendor: :groq)
+        expect(client).to be_a(LlmConductor::Clients::GroqClient)
+        expect(client.model).to eq(model)
+        expect(client.type).to eq(type)
+      end
+    end
+
     context 'when vendor is not specified' do
       context 'and model starts with "claude"' do
         let(:model) { 'claude-3-5-sonnet-20241022' }
@@ -86,8 +95,52 @@ RSpec.describe LlmConductor::ClientFactory do
         end
       end
 
-      context 'and model does not start with "gpt", "claude", or "gemini"' do
-        let(:model) { 'llama2' }
+      context 'and model starts with "llama"' do
+        let(:model) { 'llama-3.1-70b-versatile' }
+
+        it 'returns a GroqClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::GroqClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model starts with "mixtral"' do
+        let(:model) { 'mixtral-8x7b-32768' }
+
+        it 'returns a GroqClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::GroqClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model starts with "gemma"' do
+        let(:model) { 'gemma-7b-it' }
+
+        it 'returns a GroqClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::GroqClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model starts with "qwen"' do
+        let(:model) { 'qwen-2.5-72b-instruct' }
+
+        it 'returns a GroqClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::GroqClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model does not start with "gpt", "claude", "gemini", "llama", "mixtral", "gemma", or "qwen"' do
+        let(:model) { 'custom-model' }
 
         it 'returns an OllamaClient instance' do
           client = described_class.build(model:, type:)
@@ -113,7 +166,8 @@ RSpec.describe LlmConductor::ClientFactory do
           described_class.build(model:, type:, vendor: :unsupported)
         end.to raise_error(ArgumentError,
                            'Unsupported vendor: unsupported. ' \
-                           'Supported vendors: anthropic, openai, openrouter, ollama, gemini')
+                           'Supported vendors: anthropic, claude, openai, gpt, openrouter, ' \
+                           'ollama, gemini, google, groq')
       end
     end
   end

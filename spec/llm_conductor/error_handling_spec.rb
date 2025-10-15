@@ -34,7 +34,7 @@ RSpec.describe 'LlmConductor Error Handling' do
           config.ollama_address = 'invalid-url'
         end
 
-        client = LlmConductor.build_client(model: 'llama2', type: :custom)
+        client = LlmConductor.build_client(model: 'custom-model', type: :custom)
 
         expect(client).to be_a(LlmConductor::Clients::OllamaClient)
         # The client creation should succeed, connection errors would occur during generate
@@ -94,7 +94,7 @@ RSpec.describe 'LlmConductor Error Handling' do
 
       it 'handles connection errors gracefully' do
         allow(mock_ollama_client).to receive(:generate).and_raise(Errno::ECONNREFUSED)
-        client = LlmConductor.build_client(model: 'llama2', type: :summarize_text)
+        client = LlmConductor.build_client(model: 'custom-model', type: :summarize_text)
 
         result = client.generate(data:)
         expect(result).to be_a(LlmConductor::Response)

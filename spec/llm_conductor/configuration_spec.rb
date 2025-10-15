@@ -73,6 +73,23 @@ RSpec.describe LlmConductor::Configuration do
         ENV['OLLAMA_ADDRESS'] = original_ollama_address
       end
     end
+
+    describe '#groq' do
+      it 'configures Groq provider with API key' do
+        config.groq(api_key: 'groq_key')
+        provider_config = config.provider_config(:groq)
+
+        expect(provider_config[:api_key]).to eq('groq_key')
+      end
+
+      it 'uses environment variable if not provided' do
+        ENV['GROQ_API_KEY'] = 'env_groq_key'
+        config.groq
+        provider_config = config.provider_config(:groq)
+
+        expect(provider_config[:api_key]).to eq('env_groq_key')
+      end
+    end
   end
 
   describe 'legacy compatibility methods' do
@@ -93,18 +110,26 @@ RSpec.describe LlmConductor::Configuration do
       expect(config.ollama_address).to eq('http://legacy.ollama.com')
       expect(config.provider_config(:ollama)[:base_url]).to eq('http://legacy.ollama.com')
     end
+
+    it 'provides backward compatibility for groq_api_key' do
+      config.groq_api_key = 'legacy_groq_key'
+      expect(config.groq_api_key).to eq('legacy_groq_key')
+      expect(config.provider_config(:groq)[:api_key]).to eq('legacy_groq_key')
+    end
   end
 
   describe 'environment variable initialization' do
     it 'auto-configures providers from environment variables', :with_test_config do
       ENV['OPENAI_API_KEY'] = 'env_openai_key'
       ENV['OPENROUTER_API_KEY'] = 'env_openrouter_key'
+      ENV['GROQ_API_KEY'] = 'env_groq_key'
       ENV['OLLAMA_ADDRESS'] = 'http://env.ollama.com'
 
       config = described_class.new
 
       expect(config.provider_config(:openai)[:api_key]).to eq('env_openai_key')
       expect(config.provider_config(:openrouter)[:api_key]).to eq('env_openrouter_key')
+      expect(config.provider_config(:groq)[:api_key]).to eq('env_groq_key')
       expect(config.provider_config(:ollama)[:base_url]).to eq('http://env.ollama.com')
     end
   end

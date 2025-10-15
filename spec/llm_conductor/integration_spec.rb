@@ -131,7 +131,7 @@ RSpec.describe LlmConductor do
         end
 
         it 'creates Ollama client and generates summary', :aggregate_failures do
-          client = described_class.build_client(model: 'llama2', type: :summarize_text)
+          client = described_class.build_client(model: 'custom-model', type: :summarize_text)
           result = client.generate(data:)
 
           expect(client).to be_a(LlmConductor::Clients::OllamaClient)
