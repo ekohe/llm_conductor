@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
                      'providers including OpenAI GPT, Anthropic Claude, Google Gemini, Groq, OpenRouter, and Ollama. ' \
                      'Features include prompt templating, token counting, and extensible client architecture.'
   spec.homepage = 'https://github.com/ekohe/llm_conductor'
+  spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.1.0'
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
