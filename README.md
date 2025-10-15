@@ -1,10 +1,10 @@
 # LLM Conductor
 
-A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, Groq, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, and Ollama with automatic vendor detection
+🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, Groq, and Ollama with automatic vendor detection
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
@@ -106,6 +106,10 @@ LlmConductor.configure do |config|
     api_key: ENV['GEMINI_API_KEY']
   )
 
+  config.groq(
+    api_key: ENV['GROQ_API_KEY']
+  )
+
   config.ollama(
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
@@ -147,6 +151,7 @@ The gem automatically detects these environment variables:
 - `OPENAI_ORG_ID` - OpenAI organization ID (optional)
 - `ANTHROPIC_API_KEY` - Anthropic API key
 - `GEMINI_API_KEY` - Google Gemini API key
+- `GROQ_API_KEY` - Groq API key
 - `OLLAMA_ADDRESS` - Ollama server address
 
 ## Supported Providers & Models
@@ -189,10 +194,31 @@ response = LlmConductor.generate(
 )
 ```
 
-### Ollama (Default for non-GPT/Claude/Gemini models)
+### Groq (Automatic for Llama, Mixtral, Gemma, Qwen models)
 ```ruby
 response = LlmConductor.generate(
-  model: 'llama3.2',  # Auto-detects Ollama for non-GPT/Claude/Gemini models
+  model: 'llama-3.1-70b-versatile',  # Auto-detects Groq
+  prompt: 'Your prompt here'
+)
+
+# Supported Groq models
+response = LlmConductor.generate(
+  model: 'mixtral-8x7b-32768',  # Auto-detects Groq
+  prompt: 'Your prompt here'
+)
+
+# Or explicitly specify vendor
+response = LlmConductor.generate(
+  model: 'qwen-2.5-72b-instruct',
+  vendor: :groq,
+  prompt: 'Your prompt here'
+)
+```
+
+### Ollama (Default for other models)
+```ruby
+response = LlmConductor.generate(
+  model: 'deepseek-r1',
   prompt: 'Your prompt here'
 )
 ```
@@ -204,13 +230,15 @@ The gem automatically detects the appropriate provider based on model names:
 - **OpenAI**: Models starting with `gpt-` (e.g., `gpt-4`, `gpt-3.5-turbo`)
 - **Anthropic**: Models starting with `claude-` (e.g., `claude-3-5-sonnet-20241022`)
 - **Google Gemini**: Models starting with `gemini-` (e.g., `gemini-2.5-flash`, `gemini-2.0-flash`)
+- **Groq**: Models starting with `llama`, `mixtral`, `gemma`, or `qwen` (e.g., `llama-3.1-70b-versatile`, `mixtral-8x7b-32768`, `gemma-7b-it`, `qwen-2.5-72b-instruct`)
 - **Ollama**: All other models (e.g., `llama3.2`, `mistral`, `codellama`)
 
 You can also explicitly specify the vendor:
 
 ```ruby
 response = LlmConductor.generate(
-  model: 'llama3.2',  # Auto-detects Ollama for non-GPT models
+  model: 'llama-3.1-70b-versatile',
+  vendor: :groq,  # Explicitly use Groq
   prompt: 'Your prompt here'
 )
 ```
@@ -453,6 +481,8 @@ Check the `/examples` directory for comprehensive usage examples:
 - `prompt_registration.rb` - Custom prompt classes
 - `data_builder_usage.rb` - Data structuring patterns
 - `rag_usage.rb` - RAG implementation examples
+- `gemini_usage.rb` - Google Gemini integration
+- `groq_usage.rb` - Groq integration with various models
 
 ## Development
 
