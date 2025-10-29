@@ -112,7 +112,7 @@ RSpec.describe LlmConductor do
           expect(result.output).to include('techcorp.com')
           expect(OpenAI::Client).to have_received(:new).with(
             access_token: 'test_openrouter_key',
-            uri_base: 'https://openrouter.ai/api/'
+            uri_base: 'https://openrouter.ai/api/v1'
           )
         end
       end

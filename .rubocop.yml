@@ -33,6 +33,7 @@ Metrics/MethodLength:
   Max: 15
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
+    - 'lib/llm_conductor/clients/openrouter_client.rb'
 
 RSpec/ExampleLength:
   Enabled: false
@@ -89,14 +90,17 @@ Metrics/BlockLength:
 Metrics/AbcSize:
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
+    - 'lib/llm_conductor/clients/openrouter_client.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
+    - 'lib/llm_conductor/clients/openrouter_client.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
+    - 'lib/llm_conductor/clients/openrouter_client.rb'
 
 Layout/LineLength:
   Max: 120

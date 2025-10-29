@@ -1,11 +1,12 @@
 # LLM Conductor
 
-A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, Groq, and Ollama with advanced prompt management, data building patterns, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, and OpenRouter with advanced prompt management, data building patterns, vision/multimodal support, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, Groq, and Ollama with automatic vendor detection
+🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, and OpenRouter with automatic vendor detection
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
+🖼️ **Vision/Multimodal Support** - Send images alongside text prompts for vision-enabled models (OpenRouter)
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
 ⚡ **Smart Configuration** - Rails-style configuration with environment variable support  
@@ -114,6 +115,11 @@ LlmConductor.configure do |config|
     base_url: ENV['OLLAMA_ADDRESS'] || 'http://localhost:11434'
   )
 
+  config.openrouter(
+    api_key: ENV['OPENROUTER_API_KEY'],
+    uri_base: 'https://openrouter.ai/api/v1' # Optional, this is the default
+  )
+
   # Optional: Configure custom logger
   config.logger = Logger.new($stdout)                  # Log to stdout
   config.logger = Logger.new('log/llm_conductor.log')  # Log to file
@@ -153,6 +159,7 @@ The gem automatically detects these environment variables:
 - `GEMINI_API_KEY` - Google Gemini API key
 - `GROQ_API_KEY` - Groq API key
 - `OLLAMA_ADDRESS` - Ollama server address
+- `OPENROUTER_API_KEY` - OpenRouter API key
 
 ## Supported Providers & Models
 
@@ -221,6 +228,85 @@ response = LlmConductor.generate(
   model: 'deepseek-r1',
   prompt: 'Your prompt here'
 )
+```
+
+### OpenRouter (Access to Multiple Providers)
+OpenRouter provides unified access to various LLM providers with automatic routing. It also supports vision/multimodal models with automatic retry logic for handling intermittent availability issues.
+
+**Vision-capable models:**
+- `nvidia/nemotron-nano-12b-v2-vl:free` - **FREE** 12B vision model (may need retries)
+- `openai/gpt-4o-mini` - Fast and reliable
+- `google/gemini-flash-1.5` - Fast vision processing
+- `anthropic/claude-3.5-sonnet` - High quality analysis
+- `openai/gpt-4o` - Best quality (higher cost)
+
+**Note:** Free-tier models may experience intermittent 502 errors. The client includes automatic retry logic with exponential backoff (up to 5 retries) to handle these transient failures.
+
+```ruby
+# Text-only request
+response = LlmConductor.generate(
+  model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+  vendor: :openrouter,
+  prompt: 'Your prompt here'
+)
+
+# Vision/multimodal request with single image
+response = LlmConductor.generate(
+  model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+  vendor: :openrouter,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://example.com/image.jpg'
+  }
+)
+
+# Vision request with multiple images
+response = LlmConductor.generate(
+  model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+  vendor: :openrouter,
+  prompt: {
+    text: 'Compare these images',
+    images: [
+      'https://example.com/image1.jpg',
+      'https://example.com/image2.jpg'
+    ]
+  }
+)
+
+# Vision request with detail level
+response = LlmConductor.generate(
+  model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+  vendor: :openrouter,
+  prompt: {
+    text: 'Describe this image in detail',
+    images: [
+      { url: 'https://example.com/image.jpg', detail: 'high' }
+    ]
+  }
+)
+
+# Advanced: Raw array format (OpenAI-compatible)
+response = LlmConductor.generate(
+  model: 'nvidia/nemotron-nano-12b-v2-vl:free',
+  vendor: :openrouter,
+  prompt: [
+    { type: 'text', text: 'What is in this image?' },
+    { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+  ]
+)
+```
+
+**Reliability:** The OpenRouter client includes intelligent retry logic:
+- Automatically retries on 502 errors (up to 5 attempts)
+- Exponential backoff: 2s, 4s, 8s, 16s, 32s
+- Transparent to your code - works seamlessly
+- Enable logging to see retry attempts:
+
+```ruby
+LlmConductor.configure do |config|
+  config.logger = Logger.new($stdout)
+  config.logger.level = Logger::INFO
+end
 ```
 
 ### Vendor Detection
