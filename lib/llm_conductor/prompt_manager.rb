@@ -59,9 +59,7 @@ module LlmConductor
       def validate_prompt_class!(prompt_class)
         raise InvalidPromptClassError, 'Prompt must be a class' unless prompt_class.is_a?(Class)
 
-        unless prompt_class < Prompts::BasePrompt
-          raise InvalidPromptClassError, 'Prompt class must inherit from BasePrompt'
-        end
+        raise InvalidPromptClassError, 'Prompt class must inherit from BasePrompt' unless prompt_class < Prompts::BasePrompt
 
         return if prompt_class.instance_methods(false).include?(:render)
 

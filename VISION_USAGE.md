@@ -1,8 +1,10 @@
 # Vision/Multimodal Usage Guide
 
-This guide explains how to use vision/multimodal capabilities with the OpenRouter client in LLM Conductor.
+This guide explains how to use vision/multimodal capabilities with the OpenRouter and Z.ai clients in LLM Conductor.
 
 ## Quick Start
+
+### Using OpenRouter
 
 ```ruby
 require 'llm_conductor'
@@ -25,7 +27,32 @@ response = LlmConductor.generate(
 puts response.output
 ```
 
+### Using Z.ai (Zhipu AI)
+
+```ruby
+require 'llm_conductor'
+
+# Configure
+LlmConductor.configure do |config|
+  config.zai(api_key: ENV['ZAI_API_KEY'])
+end
+
+# Analyze an image with GLM-4.5V
+response = LlmConductor.generate(
+  model: 'glm-4.5v',
+  vendor: :zai,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://example.com/image.jpg'
+  }
+)
+
+puts response.output
+```
+
 ## Recommended Models
+
+### OpenRouter Models
 
 For vision tasks via OpenRouter, these models work reliably:
 
@@ -33,6 +60,14 @@ For vision tasks via OpenRouter, these models work reliably:
 - **`google/gemini-flash-1.5`** - Fast vision processing
 - **`anthropic/claude-3.5-sonnet`** - High quality analysis
 - **`openai/gpt-4o`** - Best quality (higher cost)
+
+### Z.ai Models (Zhipu AI)
+
+For vision tasks via Z.ai, these GLM models are recommended:
+
+- **`glm-4.5v`** - GLM-4.5V multimodal model (64K context window) ✅
+- **`glm-4-plus`** - Text-only model with enhanced capabilities
+- **`glm-4v`** - Previous generation vision model
 
 ## Usage Formats
 
@@ -169,9 +204,16 @@ response = LlmConductor.generate(
 
 ### Run Examples
 
+For OpenRouter:
 ```bash
 export OPENROUTER_API_KEY='your-key'
 ruby examples/openrouter_vision_usage.rb
+```
+
+For Z.ai:
+```bash
+export ZAI_API_KEY='your-key'
+ruby examples/zai_usage.rb
 ```
 
 ## Token Counting
@@ -223,11 +265,14 @@ For production:
 
 ## Examples
 
-See `examples/openrouter_vision_usage.rb` for complete working examples.
+- `examples/openrouter_vision_usage.rb` - Complete OpenRouter vision examples
+- `examples/zai_usage.rb` - Complete Z.ai GLM-4.5V examples including vision and text
 
 ## Further Reading
 
 - [OpenRouter Documentation](https://openrouter.ai/docs)
 - [OpenAI Vision API Reference](https://platform.openai.com/docs/guides/vision)
 - [Anthropic Claude Vision](https://docs.anthropic.com/claude/docs/vision)
+- [Z.ai API Platform](https://api.z.ai/)
+- [GLM-4.5V Documentation](https://bigmodel.cn/)
 

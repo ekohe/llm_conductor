@@ -19,7 +19,8 @@ module LlmConductor
         ollama: Clients::OllamaClient,
         gemini: Clients::GeminiClient,
         google: Clients::GeminiClient,
-        groq: Clients::GroqClient
+        groq: Clients::GroqClient,
+        zai: Clients::ZaiClient
       }
 
       client_classes.fetch(vendor) do
@@ -35,6 +36,8 @@ module LlmConductor
         :openai
       when /^gemini/i
         :gemini
+      when /^glm/i
+        :zai
       when /^(llama|mixtral|gemma|qwen)/i
         :groq
       else
