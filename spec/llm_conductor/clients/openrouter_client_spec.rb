@@ -64,6 +64,106 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
     end
   end
 
+  describe '#format_content (private)' do
+    context 'with string prompt' do
+      it 'returns the string as is' do
+        result = client.send(:format_content, 'Simple text prompt')
+        expect(result).to eq('Simple text prompt')
+      end
+    end
+
+    context 'with array prompt' do
+      it 'returns the array as is (pre-formatted)' do
+        content = [
+          { type: 'text', text: 'What is this?' },
+          { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+        ]
+        result = client.send(:format_content, content)
+        expect(result).to eq(content)
+      end
+    end
+
+    context 'with hash prompt' do
+      it 'formats hash with text and single image' do
+        prompt_hash = {
+          text: 'What is in this image?',
+          images: 'https://example.com/image.jpg'
+        }
+        result = client.send(:format_content, prompt_hash)
+
+        expect(result).to eq([
+                               { type: 'text', text: 'What is in this image?' },
+                               { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+                             ])
+      end
+
+      it 'formats hash with text and multiple images' do
+        prompt_hash = {
+          text: 'Compare these images',
+          images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg']
+        }
+        result = client.send(:format_content, prompt_hash)
+
+        expect(result).to eq([
+                               { type: 'text', text: 'Compare these images' },
+                               { type: 'image_url', image_url: { url: 'https://example.com/img1.jpg' } },
+                               { type: 'image_url', image_url: { url: 'https://example.com/img2.jpg' } }
+                             ])
+      end
+
+      it 'works with string keys' do
+        prompt_hash = {
+          'text' => 'What is in this image?',
+          'images' => 'https://example.com/image.jpg'
+        }
+        result = client.send(:format_content, prompt_hash)
+
+        expect(result).to eq([
+                               { type: 'text', text: 'What is in this image?' },
+                               { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+                             ])
+      end
+    end
+  end
+
+  describe '#format_image_part (private)' do
+    it 'formats string URL' do
+      result = client.send(:format_image_part, 'https://example.com/image.jpg')
+      expect(result).to eq({
+                             type: 'image_url',
+                             image_url: { url: 'https://example.com/image.jpg' }
+                           })
+    end
+
+    it 'formats hash with URL and detail' do
+      result = client.send(:format_image_part, {
+                             url: 'https://example.com/image.jpg',
+                             detail: 'high'
+                           })
+      expect(result).to eq({
+                             type: 'image_url',
+                             image_url: {
+                               url: 'https://example.com/image.jpg',
+                               detail: 'high'
+                             }
+                           })
+    end
+
+    it 'works with string keys' do
+      result = client.send(:format_image_part, {
+                             'url' => 'https://example.com/image.jpg',
+                             'detail' => 'low'
+                           })
+      expect(result).to eq({
+                             type: 'image_url',
+                             image_url: {
+                               url: 'https://example.com/image.jpg',
+                               detail: 'low'
+                             }
+                           })
+    end
+  end
+
   describe '#client (private)' do
     let(:mock_openai_client) { double('OpenAI::Client') }
 
@@ -76,7 +176,7 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
 
       expect(OpenAI::Client).to have_received(:new).with(
         access_token: 'test_openrouter_key',
-        uri_base: 'https://openrouter.ai/api/'
+        uri_base: 'https://openrouter.ai/api/v1'
       )
     end
 
@@ -96,7 +196,7 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
 
       expect(OpenAI::Client).to have_received(:new).with(
         access_token: 'different_openrouter_key',
-        uri_base: 'https://openrouter.ai/api/'
+        uri_base: 'https://openrouter.ai/api/v1'
       )
     end
   end
@@ -129,6 +229,90 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
       expect(result.input_tokens).to eq(4)
       expect(result.output_tokens).to eq(4)
       expect(result.metadata[:prompt]).to include('Analyze the provided webpage content and extract')
+    end
+  end
+
+  describe 'multimodal/vision support' do
+    let(:mock_openai_client) { double('OpenAI::Client') }
+    let(:vision_api_response) do
+      {
+        'choices' => [
+          { 'message' => { 'content' => 'This image shows a nature boardwalk in Wisconsin' } }
+        ]
+      }
+    end
+
+    before do
+      allow(OpenAI::Client).to receive(:new).and_return(mock_openai_client)
+      allow(mock_openai_client).to receive(:chat).and_return(vision_api_response)
+    end
+
+    it 'supports vision requests with hash format' do
+      prompt_hash = {
+        text: 'What is in this image?',
+        images: 'https://example.com/image.jpg'
+      }
+
+      result = client.send(:generate_content, prompt_hash)
+
+      expect(mock_openai_client).to have_received(:chat).with(
+        parameters: {
+          model:,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: 'What is in this image?' },
+                { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+              ]
+            }
+          ],
+          provider: { sort: 'throughput' }
+        }
+      )
+      expect(result).to eq('This image shows a nature boardwalk in Wisconsin')
+    end
+
+    it 'supports vision requests with multiple images' do
+      prompt_hash = {
+        text: 'Compare these images',
+        images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg']
+      }
+
+      result = client.send(:generate_content, prompt_hash)
+
+      expect(mock_openai_client).to have_received(:chat).with(
+        parameters: {
+          model:,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Compare these images' },
+                { type: 'image_url', image_url: { url: 'https://example.com/img1.jpg' } },
+                { type: 'image_url', image_url: { url: 'https://example.com/img2.jpg' } }
+              ]
+            }
+          ],
+          provider: { sort: 'throughput' }
+        }
+      )
+      expect(result).to eq('This image shows a nature boardwalk in Wisconsin')
+    end
+
+    it 'maintains backward compatibility with simple string prompts' do
+      simple_prompt = 'What is the capital of France?'
+
+      result = client.send(:generate_content, simple_prompt)
+
+      expect(mock_openai_client).to have_received(:chat).with(
+        parameters: {
+          model:,
+          messages: [{ role: 'user', content: simple_prompt }],
+          provider: { sort: 'throughput' }
+        }
+      )
+      expect(result).to eq('This image shows a nature boardwalk in Wisconsin')
     end
   end
 end
