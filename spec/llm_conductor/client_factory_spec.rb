@@ -61,6 +61,15 @@ RSpec.describe LlmConductor::ClientFactory do
       end
     end
 
+    context 'when vendor is :zai' do
+      it 'returns a ZaiClient instance' do
+        client = described_class.build(model:, type:, vendor: :zai)
+        expect(client).to be_a(LlmConductor::Clients::ZaiClient)
+        expect(client.model).to eq(model)
+        expect(client.type).to eq(type)
+      end
+    end
+
     context 'when vendor is not specified' do
       context 'and model starts with "claude"' do
         let(:model) { 'claude-3-5-sonnet-20241022' }
@@ -139,7 +148,18 @@ RSpec.describe LlmConductor::ClientFactory do
         end
       end
 
-      context 'and model does not start with "gpt", "claude", "gemini", "llama", "mixtral", "gemma", or "qwen"' do
+      context 'and model starts with "glm"' do
+        let(:model) { 'glm-4.5v' }
+
+        it 'returns a ZaiClient instance' do
+          client = described_class.build(model:, type:)
+          expect(client).to be_a(LlmConductor::Clients::ZaiClient)
+          expect(client.model).to eq(model)
+          expect(client.type).to eq(type)
+        end
+      end
+
+      context 'and model does not start with "gpt", "claude", "gemini", "glm", "llama", "mixtral", "gemma", or "qwen"' do
         let(:model) { 'custom-model' }
 
         it 'returns an OllamaClient instance' do
@@ -167,7 +187,7 @@ RSpec.describe LlmConductor::ClientFactory do
         end.to raise_error(ArgumentError,
                            'Unsupported vendor: unsupported. ' \
                            'Supported vendors: anthropic, claude, openai, gpt, openrouter, ' \
-                           'ollama, gemini, google, groq')
+                           'ollama, gemini, google, groq, zai')
       end
     end
   end

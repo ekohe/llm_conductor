@@ -1,12 +1,12 @@
 # LLM Conductor
 
-A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, and OpenRouter with advanced prompt management, data building patterns, vision/multimodal support, and comprehensive response handling.
+A powerful Ruby gem from [Ekohe](https://ekohe.com) for orchestrating multiple Language Model providers with a unified, modern interface. LLM Conductor provides seamless integration with OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, OpenRouter, and Z.ai (Zhipu AI) with advanced prompt management, data building patterns, vision/multimodal support, and comprehensive response handling.
 
 ## Features
 
-🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, and OpenRouter with automatic vendor detection
+🚀 **Multi-Provider Support** - OpenAI GPT, Anthropic Claude, Google Gemini, Groq, Ollama, OpenRouter, and Z.ai with automatic vendor detection
 🎯 **Unified Modern API** - Simple `LlmConductor.generate()` interface with rich Response objects  
-🖼️ **Vision/Multimodal Support** - Send images alongside text prompts for vision-enabled models (OpenRouter)
+🖼️ **Vision/Multimodal Support** - Send images alongside text prompts for vision-enabled models (OpenRouter, Z.ai GLM-4.5V)
 📝 **Advanced Prompt Management** - Registrable prompt classes with inheritance and templating  
 🏗️ **Data Builder Pattern** - Structured data preparation for complex LLM inputs  
 ⚡ **Smart Configuration** - Rails-style configuration with environment variable support  
@@ -120,6 +120,11 @@ LlmConductor.configure do |config|
     uri_base: 'https://openrouter.ai/api/v1' # Optional, this is the default
   )
 
+  config.zai(
+    api_key: ENV['ZAI_API_KEY'],
+    uri_base: 'https://api.z.ai/api/paas/v4' # Optional, this is the default
+  )
+
   # Optional: Configure custom logger
   config.logger = Logger.new($stdout)                  # Log to stdout
   config.logger = Logger.new('log/llm_conductor.log')  # Log to file
@@ -160,6 +165,7 @@ The gem automatically detects these environment variables:
 - `GROQ_API_KEY` - Groq API key
 - `OLLAMA_ADDRESS` - Ollama server address
 - `OPENROUTER_API_KEY` - OpenRouter API key
+- `ZAI_API_KEY` - Z.ai (Zhipu AI) API key
 
 ## Supported Providers & Models
 
@@ -309,6 +315,81 @@ LlmConductor.configure do |config|
 end
 ```
 
+### Z.ai (Zhipu AI) - GLM Models with Vision Support
+Z.ai provides access to GLM (General Language Model) series including the powerful GLM-4.5V multimodal model with 64K context window and vision capabilities.
+
+**Text models:**
+- `glm-4-plus` - Enhanced text-only model
+- `glm-4` - Standard GLM-4 model
+
+**Vision-capable models:**
+- `glm-4.5v` - Latest multimodal model with 64K context ✅ **RECOMMENDED**
+- `glm-4v` - Previous generation vision model
+
+```ruby
+# Text-only request with GLM-4-plus
+response = LlmConductor.generate(
+  model: 'glm-4-plus',
+  vendor: :zai,
+  prompt: 'Explain quantum computing in simple terms'
+)
+
+# Vision request with GLM-4.5V - single image
+response = LlmConductor.generate(
+  model: 'glm-4.5v',
+  vendor: :zai,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://example.com/image.jpg'
+  }
+)
+
+# Vision request with multiple images
+response = LlmConductor.generate(
+  model: 'glm-4.5v',
+  vendor: :zai,
+  prompt: {
+    text: 'Compare these images and identify differences',
+    images: [
+      'https://example.com/image1.jpg',
+      'https://example.com/image2.jpg'
+    ]
+  }
+)
+
+# Vision request with detail level
+response = LlmConductor.generate(
+  model: 'glm-4.5v',
+  vendor: :zai,
+  prompt: {
+    text: 'Analyze this document in detail',
+    images: [
+      { url: 'https://example.com/document.jpg', detail: 'high' }
+    ]
+  }
+)
+
+# Base64 encoded local images
+require 'base64'
+image_data = Base64.strict_encode64(File.read('path/to/image.jpg'))
+response = LlmConductor.generate(
+  model: 'glm-4.5v',
+  vendor: :zai,
+  prompt: {
+    text: 'What is in this image?',
+    images: "data:image/jpeg;base64,#{image_data}"
+  }
+)
+```
+
+**GLM-4.5V Features:**
+- 64K token context window
+- Multimodal understanding (text + images)
+- Document understanding and OCR
+- Image reasoning and analysis
+- Base64 image support for local files
+- OpenAI-compatible API format
+
 ### Vendor Detection
 
 The gem automatically detects the appropriate provider based on model names:
@@ -316,6 +397,7 @@ The gem automatically detects the appropriate provider based on model names:
 - **OpenAI**: Models starting with `gpt-` (e.g., `gpt-4`, `gpt-3.5-turbo`)
 - **Anthropic**: Models starting with `claude-` (e.g., `claude-3-5-sonnet-20241022`)
 - **Google Gemini**: Models starting with `gemini-` (e.g., `gemini-2.5-flash`, `gemini-2.0-flash`)
+- **Z.ai**: Models starting with `glm-` (e.g., `glm-4.5v`, `glm-4-plus`, `glm-4v`)
 - **Groq**: Models starting with `llama`, `mixtral`, `gemma`, or `qwen` (e.g., `llama-3.1-70b-versatile`, `mixtral-8x7b-32768`, `gemma-7b-it`, `qwen-2.5-72b-instruct`)
 - **Ollama**: All other models (e.g., `llama3.2`, `mistral`, `codellama`)
 
@@ -569,6 +651,8 @@ Check the `/examples` directory for comprehensive usage examples:
 - `rag_usage.rb` - RAG implementation examples
 - `gemini_usage.rb` - Google Gemini integration
 - `groq_usage.rb` - Groq integration with various models
+- `openrouter_vision_usage.rb` - OpenRouter vision/multimodal examples
+- `zai_usage.rb` - Z.ai GLM-4.5V vision and text examples
 
 ## Development
 

@@ -14,10 +14,11 @@ require_relative 'llm_conductor/clients/groq_client'
 require_relative 'llm_conductor/clients/ollama_client'
 require_relative 'llm_conductor/clients/openrouter_client'
 require_relative 'llm_conductor/clients/gemini_client'
+require_relative 'llm_conductor/clients/zai_client'
 require_relative 'llm_conductor/client_factory'
 
 # LLM Conductor provides a unified interface for multiple Language Model providers
-# including OpenAI GPT, Anthropic Claude, Google Gemini, Groq, OpenRouter, and Ollama
+# including OpenAI GPT, Anthropic Claude, Google Gemini, Groq, OpenRouter, Z.ai, and Ollama
 # with built-in prompt templates, token counting, and extensible client architecture.
 module LlmConductor
   class Error < StandardError; end
@@ -63,16 +64,17 @@ module LlmConductor
       when :ollama then Clients::OllamaClient
       when :gemini, :google then Clients::GeminiClient
       when :groq then Clients::GroqClient
+      when :zai then Clients::ZaiClient
       else
         raise ArgumentError,
               "Unsupported vendor: #{vendor}. " \
-              'Supported vendors: anthropic, openai, openrouter, ollama, gemini, groq'
+              'Supported vendors: anthropic, openai, openrouter, ollama, gemini, groq, zai'
       end
     end
   end
 
   # List of supported vendors
-  SUPPORTED_VENDORS = %i[anthropic openai openrouter ollama gemini groq].freeze
+  SUPPORTED_VENDORS = %i[anthropic openai openrouter ollama gemini groq zai].freeze
 
   # List of supported prompt types
   SUPPORTED_PROMPT_TYPES = %i[

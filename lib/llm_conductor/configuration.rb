@@ -72,6 +72,14 @@ module LlmConductor
       }
     end
 
+    # Configure Z.ai provider
+    def zai(api_key: nil, **options)
+      @providers[:zai] = {
+        api_key: api_key || ENV['ZAI_API_KEY'],
+        **options
+      }
+    end
+
     # Get provider configuration
     def provider_config(provider)
       @providers[provider.to_sym] || {}
@@ -126,6 +134,14 @@ module LlmConductor
       groq(api_key: value)
     end
 
+    def zai_api_key
+      provider_config(:zai)[:api_key]
+    end
+
+    def zai_api_key=(value)
+      zai(api_key: value)
+    end
+
     private
 
     def setup_defaults_from_env
@@ -135,6 +151,7 @@ module LlmConductor
       openrouter if ENV['OPENROUTER_API_KEY']
       gemini if ENV['GEMINI_API_KEY']
       groq if ENV['GROQ_API_KEY']
+      zai if ENV['ZAI_API_KEY']
       ollama # Always configure Ollama with default URL
     end
   end

@@ -29,11 +29,15 @@ Style/HashSyntax:
 Lint/ConstantDefinitionInBlock:
   Enabled: false
 
+Metrics/ClassLength:
+  Max: 120
+
 Metrics/MethodLength:
   Max: 15
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
+    - 'lib/llm_conductor/clients/zai_client.rb'
 
 RSpec/ExampleLength:
   Enabled: false
@@ -91,19 +95,23 @@ Metrics/AbcSize:
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
+    - 'lib/llm_conductor/clients/zai_client.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
+    - 'lib/llm_conductor.rb'
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
+    - 'lib/llm_conductor/clients/zai_client.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
+    - 'lib/llm_conductor/clients/zai_client.rb'
 
 Layout/LineLength:
-  Max: 120
+  Max: 125
 
 # Performance cops (from .rubocop_todo.yml)
 Performance/RedundantEqualityComparisonBlock:
