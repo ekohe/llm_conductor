@@ -112,6 +112,8 @@ Metrics/PerceivedComplexity:
 
 Layout/LineLength:
   Max: 125
+  Exclude:
+    - 'examples/*.rb'
 
 # Performance cops (from .rubocop_todo.yml)
 Performance/RedundantEqualityComparisonBlock:

@@ -1,8 +1,54 @@
 # Vision/Multimodal Usage Guide
 
-This guide explains how to use vision/multimodal capabilities with the OpenRouter and Z.ai clients in LLM Conductor.
+This guide explains how to use vision/multimodal capabilities with LLM Conductor. Vision support is available for Claude (Anthropic), GPT (OpenAI), OpenRouter, and Z.ai clients.
 
 ## Quick Start
+
+### Using Claude (Anthropic)
+
+```ruby
+require 'llm_conductor'
+
+# Configure
+LlmConductor.configure do |config|
+  config.anthropic(api_key: ENV['ANTHROPIC_API_KEY'])
+end
+
+# Analyze an image
+response = LlmConductor.generate(
+  model: 'claude-sonnet-4-20250514',
+  vendor: :anthropic,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://example.com/image.jpg'
+  }
+)
+
+puts response.output
+```
+
+### Using GPT (OpenAI)
+
+```ruby
+require 'llm_conductor'
+
+# Configure
+LlmConductor.configure do |config|
+  config.openai(api_key: ENV['OPENAI_API_KEY'])
+end
+
+# Analyze an image
+response = LlmConductor.generate(
+  model: 'gpt-4o',
+  vendor: :openai,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://example.com/image.jpg'
+  }
+)
+
+puts response.output
+```
 
 ### Using OpenRouter
 
@@ -51,6 +97,23 @@ puts response.output
 ```
 
 ## Recommended Models
+
+### Claude Models (Anthropic)
+
+For vision tasks via Anthropic API:
+
+- **`claude-sonnet-4-20250514`** - Claude Sonnet 4 (latest, best for vision) ✅
+- **`claude-opus-4-20250514`** - Claude Opus 4 (maximum quality)
+- **`claude-opus-4-1-20250805`** - Claude Opus 4.1 (newest flagship model)
+
+### GPT Models (OpenAI)
+
+For vision tasks via OpenAI API:
+
+- **`gpt-4o`** - Latest GPT-4 Omni with advanced vision capabilities ✅
+- **`gpt-4o-mini`** - Fast, cost-effective vision model
+- **`gpt-4-turbo`** - Previous generation with vision support
+- **`gpt-4-vision-preview`** - Legacy vision model (deprecated)
 
 ### OpenRouter Models
 
@@ -103,12 +166,12 @@ response = LlmConductor.generate(
 
 ### 3. Image with Detail Level
 
-For high-resolution images, specify the detail level:
+For high-resolution images, specify the detail level (supported by GPT and OpenRouter):
 
 ```ruby
 response = LlmConductor.generate(
-  model: 'openai/gpt-4o-mini',
-  vendor: :openrouter,
+  model: 'gpt-4o',
+  vendor: :openai,
   prompt: {
     text: 'Analyze this image in detail',
     images: [
@@ -118,23 +181,38 @@ response = LlmConductor.generate(
 )
 ```
 
-Detail levels:
+Detail levels (GPT and OpenRouter only):
 - `'high'` - Better for detailed analysis (uses more tokens)
 - `'low'` - Faster, cheaper (default if not specified)
 - `'auto'` - Let the model decide
 
+**Note:** Claude (Anthropic) and Z.ai don't support the `detail` parameter.
+
 ### 4. Raw Format (Advanced)
 
-For maximum control, use the OpenAI-compatible array format:
+For maximum control, use provider-specific array formats:
 
+**GPT/OpenRouter Format:**
 ```ruby
 response = LlmConductor.generate(
-  model: 'openai/gpt-4o-mini',
-  vendor: :openrouter,
+  model: 'gpt-4o',
+  vendor: :openai,
   prompt: [
     { type: 'text', text: 'What is in this image?' },
     { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } },
     { type: 'text', text: 'Describe it in detail.' }
+  ]
+)
+```
+
+**Claude Format:**
+```ruby
+response = LlmConductor.generate(
+  model: 'claude-sonnet-4-20250514',
+  vendor: :anthropic,
+  prompt: [
+    { type: 'image', source: { type: 'url', url: 'https://example.com/image.jpg' } },
+    { type: 'text', text: 'What is in this image? Describe it in detail.' }
   ]
 )
 ```
@@ -204,6 +282,18 @@ response = LlmConductor.generate(
 
 ### Run Examples
 
+For Claude:
+```bash
+export ANTHROPIC_API_KEY='your-key'
+ruby examples/claude_vision_usage.rb
+```
+
+For GPT:
+```bash
+export OPENAI_API_KEY='your-key'
+ruby examples/gpt_vision_usage.rb
+```
+
 For OpenRouter:
 ```bash
 export OPENROUTER_API_KEY='your-key'
@@ -265,6 +355,8 @@ For production:
 
 ## Examples
 
+- `examples/claude_vision_usage.rb` - Complete Claude vision examples with Claude Sonnet 4
+- `examples/gpt_vision_usage.rb` - Complete GPT vision examples with GPT-4o
 - `examples/openrouter_vision_usage.rb` - Complete OpenRouter vision examples
 - `examples/zai_usage.rb` - Complete Z.ai GLM-4.5V examples including vision and text
 

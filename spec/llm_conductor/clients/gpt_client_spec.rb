@@ -67,6 +67,106 @@ RSpec.describe LlmConductor::Clients::GptClient do
     end
   end
 
+  describe '#format_content (private)' do
+    it 'returns string as-is for simple prompts' do
+      result = client.send(:format_content, 'Simple text')
+      expect(result).to eq('Simple text')
+    end
+
+    it 'returns array as-is for pre-formatted content' do
+      formatted = [{ type: 'text', text: 'Hello' }]
+      result = client.send(:format_content, formatted)
+      expect(result).to eq(formatted)
+    end
+
+    it 'converts hash with text and image to multimodal array' do
+      hash_prompt = { text: 'What is this?', images: 'https://example.com/image.jpg' }
+      result = client.send(:format_content, hash_prompt)
+
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(2)
+      expect(result[0]).to eq({ type: 'text', text: 'What is this?' })
+      expect(result[1]).to eq({ type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } })
+    end
+  end
+
+  describe '#format_multimodal_hash (private)' do
+    it 'handles single image URL' do
+      hash = { text: 'Describe this', images: 'https://example.com/image.jpg' }
+      result = client.send(:format_multimodal_hash, hash)
+
+      expect(result).to eq([
+                             { type: 'text', text: 'Describe this' },
+                             { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+                           ])
+    end
+
+    it 'handles multiple image URLs' do
+      hash = {
+        text: 'Compare these',
+        images: ['https://example.com/1.jpg', 'https://example.com/2.jpg']
+      }
+      result = client.send(:format_multimodal_hash, hash)
+
+      expect(result.size).to eq(3)
+      expect(result[0][:type]).to eq('text')
+      expect(result[1][:type]).to eq('image_url')
+      expect(result[2][:type]).to eq('image_url')
+    end
+
+    it 'handles images with detail level' do
+      hash = {
+        text: 'Analyze',
+        images: [{ url: 'https://example.com/image.jpg', detail: 'high' }]
+      }
+      result = client.send(:format_multimodal_hash, hash)
+
+      expect(result[1]).to eq({
+                                type: 'image_url',
+                                image_url: { url: 'https://example.com/image.jpg', detail: 'high' }
+                              })
+    end
+
+    it 'handles text-only hash' do
+      hash = { text: 'Just text' }
+      result = client.send(:format_multimodal_hash, hash)
+
+      expect(result).to eq([{ type: 'text', text: 'Just text' }])
+    end
+  end
+
+  describe '#calculate_tokens (private)' do
+    let(:mock_encoder) { double('encoder') }
+
+    before do
+      allow(Tiktoken).to receive(:get_encoding).and_return(mock_encoder)
+    end
+
+    it 'calculates tokens for string content' do
+      allow(mock_encoder).to receive(:encode).with('test').and_return(%w[t e s t])
+      result = client.send(:calculate_tokens, 'test')
+      expect(result).to eq(4)
+    end
+
+    it 'calculates tokens for hash with text' do
+      allow(mock_encoder).to receive(:encode).with('analyze this').and_return(%w[a n a l y z e])
+      hash = { text: 'analyze this', images: 'https://example.com/image.jpg' }
+      result = client.send(:calculate_tokens, hash)
+      expect(result).to eq(7)
+    end
+
+    it 'calculates tokens for array content' do
+      allow(mock_encoder).to receive(:encode).with('hello world').and_return(%w[h e l l o])
+      array = [
+        { type: 'text', text: 'hello' },
+        { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } },
+        { type: 'text', text: 'world' }
+      ]
+      result = client.send(:calculate_tokens, array)
+      expect(result).to eq(5)
+    end
+  end
+
   describe '#client (private)' do
     let(:mock_openai_client) { double('OpenAI::Client') }
 
