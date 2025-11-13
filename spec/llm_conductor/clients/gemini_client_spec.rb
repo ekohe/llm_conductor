@@ -19,6 +19,10 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
     it 'includes Prompts module through inheritance' do
       expect(client).to respond_to(:prompt_analyze_content)
     end
+
+    it 'includes VisionSupport concern' do
+      expect(client).to be_a(LlmConductor::Clients::Concerns::VisionSupport)
+    end
   end
 
   describe '#generate_content (private)' do
@@ -121,6 +125,147 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
         },
         options: { model: }
       )
+    end
+  end
+
+  describe 'vision support' do
+    let(:mock_gemini_client) { double('Gemini') }
+    let(:api_response) do
+      {
+        'candidates' => [
+          {
+            'content' => {
+              'parts' => [
+                { 'text' => 'Vision response from Gemini' }
+              ]
+            }
+          }
+        ]
+      }
+    end
+    let(:mock_image_data) { 'base64_encoded_image_data' }
+
+    before do
+      allow(mock_gemini_client).to receive(:generate_content).and_return(api_response)
+      # Mock image fetching and encoding
+      allow(client).to receive_messages(client: mock_gemini_client, fetch_and_encode_image: mock_image_data)
+    end
+
+    context 'with hash format (text and images)' do
+      let(:prompt) do
+        {
+          text: 'What is in this image?',
+          images: 'https://example.com/image.jpg'
+        }
+      end
+
+      it 'formats multimodal content correctly' do
+        client.send(:generate_content, prompt)
+
+        expect(mock_gemini_client).to have_received(:generate_content) do |payload|
+          parts = payload[:contents][0][:parts]
+          expect(parts.length).to eq(2)
+          expect(parts[0][:text]).to eq('What is in this image?')
+          expect(parts[1][:inline_data][:data]).to eq(mock_image_data)
+          expect(parts[1][:inline_data][:mime_type]).to eq('image/jpeg')
+        end
+      end
+
+      it 'fetches and encodes the image' do
+        client.send(:generate_content, prompt)
+        expect(client).to have_received(:fetch_and_encode_image).with('https://example.com/image.jpg')
+      end
+    end
+
+    context 'with multiple images' do
+      let(:prompt) do
+        {
+          text: 'Compare these images',
+          images: [
+            'https://example.com/image1.jpg',
+            'https://example.com/image2.jpg'
+          ]
+        }
+      end
+
+      it 'includes all images in the payload' do
+        client.send(:generate_content, prompt)
+
+        expect(mock_gemini_client).to have_received(:generate_content) do |payload|
+          parts = payload[:contents][0][:parts]
+          expect(parts.length).to eq(3) # 1 text + 2 images
+          expect(parts[0][:text]).to eq('Compare these images')
+          expect(parts[1][:inline_data][:data]).to eq(mock_image_data)
+          expect(parts[2][:inline_data][:data]).to eq(mock_image_data)
+        end
+      end
+
+      it 'fetches and encodes both images' do
+        client.send(:generate_content, prompt)
+        expect(client).to have_received(:fetch_and_encode_image).with('https://example.com/image1.jpg')
+        expect(client).to have_received(:fetch_and_encode_image).with('https://example.com/image2.jpg')
+      end
+    end
+
+    context 'with array format' do
+      let(:prompt) do
+        [
+          { type: 'text', text: 'Analyze this:' },
+          { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } },
+          { type: 'text', text: 'What do you see?' }
+        ]
+      end
+
+      it 'converts array format to Gemini parts' do
+        client.send(:generate_content, prompt)
+
+        expect(mock_gemini_client).to have_received(:generate_content) do |payload|
+          parts = payload[:contents][0][:parts]
+          expect(parts.length).to eq(3)
+          expect(parts[0][:text]).to eq('Analyze this:')
+          expect(parts[1][:inline_data][:data]).to eq(mock_image_data)
+          expect(parts[2][:text]).to eq('What do you see?')
+        end
+      end
+    end
+
+    context 'with image hash format' do
+      let(:prompt) do
+        {
+          text: 'Describe this image',
+          images: [
+            { url: 'https://example.com/image.jpg' }
+          ]
+        }
+      end
+
+      it 'handles image hash format' do
+        client.send(:generate_content, prompt)
+
+        expect(mock_gemini_client).to have_received(:generate_content) do |payload|
+          parts = payload[:contents][0][:parts]
+          expect(parts.length).to eq(2)
+          expect(parts[1][:inline_data][:data]).to eq(mock_image_data)
+        end
+      end
+    end
+
+    context 'with webp images' do
+      let(:prompt) do
+        {
+          text: 'What is this?',
+          images: 'https://example.com/image.webp'
+        }
+      end
+
+      it 'detects webp mime type correctly' do
+        client.send(:generate_content, prompt)
+
+        expect(mock_gemini_client).to have_received(:generate_content) do |payload|
+          parts = payload[:contents][0][:parts]
+          expect(parts[1][:inline_data][:mime_type]).to eq('image/webp')
+        end
+      end
     end
   end
 

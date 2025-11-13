@@ -1,6 +1,6 @@
 # Vision/Multimodal Usage Guide
 
-This guide explains how to use vision/multimodal capabilities with LLM Conductor. Vision support is available for Claude (Anthropic), GPT (OpenAI), OpenRouter, and Z.ai clients.
+This guide explains how to use vision/multimodal capabilities with LLM Conductor. Vision support is available for Claude (Anthropic), GPT (OpenAI), Gemini (Google), OpenRouter, and Z.ai clients.
 
 ## Quick Start
 
@@ -73,6 +73,29 @@ response = LlmConductor.generate(
 puts response.output
 ```
 
+### Using Gemini (Google)
+
+```ruby
+require 'llm_conductor'
+
+# Configure
+LlmConductor.configure do |config|
+  config.gemini(api_key: ENV['GEMINI_API_KEY'])
+end
+
+# Analyze an image
+response = LlmConductor.generate(
+  model: 'gemini-2.5-flash',
+  vendor: :gemini,
+  prompt: {
+    text: 'What is in this image?',
+    images: 'https://cdn.autonomous.ai/production/ecm/230930/10-Comfortable-Office-Chairs-for-Gaming-A-Comprehensive-Review00002.webp'
+  }
+)
+
+puts response.output
+```
+
 ### Using Z.ai (Zhipu AI)
 
 ```ruby
@@ -123,6 +146,17 @@ For vision tasks via OpenRouter, these models work reliably:
 - **`google/gemini-flash-1.5`** - Fast vision processing
 - **`anthropic/claude-3.5-sonnet`** - High quality analysis
 - **`openai/gpt-4o`** - Best quality (higher cost)
+
+### Gemini Models (Google)
+
+For vision tasks via Google Gemini API:
+
+- **`gemini-2.0-flash`** - Gemini 2.0 Flash (fast, efficient, multimodal) ✅
+- **`gemini-2.5-flash`** - Gemini 2.5 Flash (latest fast model)
+- **`gemini-1.5-pro`** - Gemini 1.5 Pro (high quality, large context window)
+- **`gemini-1.5-flash`** - Gemini 1.5 Flash (previous generation fast model)
+
+**Note:** Gemini client automatically fetches images from URLs and encodes them as base64, as required by the Gemini API.
 
 ### Z.ai Models (Zhipu AI)
 
@@ -186,7 +220,7 @@ Detail levels (GPT and OpenRouter only):
 - `'low'` - Faster, cheaper (default if not specified)
 - `'auto'` - Let the model decide
 
-**Note:** Claude (Anthropic) and Z.ai don't support the `detail` parameter.
+**Note:** Claude (Anthropic), Gemini (Google), and Z.ai don't support the `detail` parameter.
 
 ### 4. Raw Format (Advanced)
 
@@ -217,6 +251,18 @@ response = LlmConductor.generate(
 )
 ```
 
+**Gemini Format:**
+```ruby
+response = LlmConductor.generate(
+  model: 'gemini-2.0-flash',
+  vendor: :gemini,
+  prompt: [
+    { type: 'text', text: 'What is in this image? Describe it in detail.' },
+    { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+  ]
+)
+```
+
 ## Text-Only Requests (Backward Compatible)
 
 The client still supports regular text-only requests:
@@ -235,6 +281,10 @@ response = LlmConductor.generate(
 - Supported formats: JPEG, PNG, GIF, WebP
 - Maximum file size depends on the model
 - Use HTTPS URLs when possible
+
+**Provider-Specific Notes:**
+- **Gemini**: URLs are automatically fetched and base64-encoded by the client before sending to the API
+- **Claude, GPT, OpenRouter, Z.ai**: URLs are sent directly to the API (no preprocessing required)
 
 ## Error Handling
 
@@ -300,6 +350,12 @@ export OPENROUTER_API_KEY='your-key'
 ruby examples/openrouter_vision_usage.rb
 ```
 
+For Gemini:
+```bash
+export GEMINI_API_KEY='your-key'
+ruby examples/gemini_vision_usage.rb
+```
+
 For Z.ai:
 ```bash
 export ZAI_API_KEY='your-key'
@@ -357,6 +413,7 @@ For production:
 
 - `examples/claude_vision_usage.rb` - Complete Claude vision examples with Claude Sonnet 4
 - `examples/gpt_vision_usage.rb` - Complete GPT vision examples with GPT-4o
+- `examples/gemini_vision_usage.rb` - Complete Gemini vision examples with Gemini 2.0 Flash
 - `examples/openrouter_vision_usage.rb` - Complete OpenRouter vision examples
 - `examples/zai_usage.rb` - Complete Z.ai GLM-4.5V examples including vision and text
 
@@ -365,6 +422,7 @@ For production:
 - [OpenRouter Documentation](https://openrouter.ai/docs)
 - [OpenAI Vision API Reference](https://platform.openai.com/docs/guides/vision)
 - [Anthropic Claude Vision](https://docs.anthropic.com/claude/docs/vision)
+- [Google Gemini API Documentation](https://ai.google.dev/docs)
 - [Z.ai API Platform](https://api.z.ai/)
 - [GLM-4.5V Documentation](https://bigmodel.cn/)
 
