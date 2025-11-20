@@ -111,4 +111,3 @@ deploy_rubygems:
     - rm -f ~/.gem/credentials
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
-      when: on_success
