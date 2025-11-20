@@ -41,6 +41,16 @@ test:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_REF_NAME == "main"
 
+# Check if version is new (runs on all MRs and main branch)
+check_version:
+  stage: test
+  script:
+    - chmod +x bin/check_version
+    - bin/check_version
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_REF_NAME == "main"
+
 
 # Build gem
 build_gem:
@@ -75,22 +85,30 @@ test_gem_install:
     - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_TAG
 
-# Deploy to RubyGems (only on tags)
-# deploy_rubygems:
-#   stage: deploy
-#   cache:
-#     <<: *global_cache
-#     policy: pull
-#   dependencies:
-#     - build_gem
-#   script:
-#     - mkdir -p ~/.gem
-#     - echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" > ~/.gem/credentials
-#     - chmod 600 ~/.gem/credentials
-#     - gem push pkg/*.gem
-#   rules:
-#     - if: $CI_COMMIT_TAG
-#       when: manual
-#   environment:
-#     name: production
-#     url: https://rubygems.org/gems/llm_conductor
+# Deploy to RubyGems (automatic on main branch merge)
+deploy_rubygems:
+  stage: deploy
+  cache:
+    <<: *global_cache
+    policy: pull
+  dependencies:
+    - build_gem
+  script:
+    # Get the gem version
+    - export GEM_VERSION=$(ruby -r ./lib/llm_conductor/version.rb -e "puts LlmConductor::VERSION")
+    - echo "Deploying gem version ${GEM_VERSION} to RubyGems..."
+    # Setup RubyGems credentials
+    - mkdir -p ~/.gem
+    - echo "---" > ~/.gem/credentials
+    - echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" >> ~/.gem/credentials
+    - chmod 600 ~/.gem/credentials
+    # Build and push the gem
+    - ls -1 *.gemspec
+    - gem build *.gemspec
+    - gem push llm_conductor-${GEM_VERSION}.gem
+    - echo "✅ Successfully published llm_conductor-${GEM_VERSION} to RubyGems!"
+    # Clean up credentials
+    - rm -f ~/.gem/credentials
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "main"
+      when: on_success

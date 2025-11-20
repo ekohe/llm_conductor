@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/llm_conductor/version'
+
+gem_name = 'llm_conductor'
+current_version = LlmConductor::VERSION
+
+puts "Checking version #{current_version} for #{gem_name}..."
+
+# Check if this version already exists on RubyGems
+result = `gem search -rq #{gem_name}`
+versions = result.scan(/#{gem_name} \(([\d.]+(?:, [\d.]+)*)\)/).flatten
+
+if versions.empty?
+  puts '✅ No versions found on RubyGems (gem might not be published yet)'
+  exit 0
+end
+
+all_versions = versions.first.split(', ')
+
+if all_versions.include?(current_version)
+  puts "❌ Version #{current_version} already exists on RubyGems!"
+  puts '   Please update lib/llm_conductor/version.rb before pushing.'
+  puts "   Latest version on RubyGems: #{all_versions.first}"
+  exit 1
+else
+  puts "✅ Version #{current_version} is new and can be published"
+  puts "   Latest version on RubyGems: #{all_versions.first}"
+  exit 0
+end
