@@ -94,7 +94,6 @@ deploy_rubygems:
   dependencies:
     - build_gem
   script:
-    script:
     - |
       export GEM_VERSION=$(ruby -r ./lib/llm_conductor/version.rb -e "puts LlmConductor::VERSION")
       echo "Deploying gem version ${GEM_VERSION} to RubyGems..."
