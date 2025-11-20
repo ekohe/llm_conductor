@@ -94,16 +94,18 @@ deploy_rubygems:
   dependencies:
     - build_gem
   script:
-    - export GEM_VERSION=$(ruby -r ./lib/llm_conductor/version.rb -e "puts LlmConductor::VERSION")
-    - echo "Deploying gem version ${GEM_VERSION} to RubyGems..."
-    - mkdir -p ~/.gem
-    - echo "---" > ~/.gem/credentials
-    - echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" >> ~/.gem/credentials
-    - chmod 600 ~/.gem/credentials
-    - ls -1 *.gemspec
-    - gem build *.gemspec
-    - gem push llm_conductor-${GEM_VERSION}.gem
-    - echo "Successfully published llm_conductor-${GEM_VERSION} to RubyGems!"
-    - rm -f ~/.gem/credentials
+    script:
+    - |
+      export GEM_VERSION=$(ruby -r ./lib/llm_conductor/version.rb -e "puts LlmConductor::VERSION")
+      echo "Deploying gem version ${GEM_VERSION} to RubyGems..."
+      mkdir -p ~/.gem
+      echo "---" > ~/.gem/credentials
+      echo ":rubygems_api_key: ${RUBYGEMS_API_KEY}" >> ~/.gem/credentials
+      chmod 600 ~/.gem/credentials
+      ls -1 *.gemspec
+      gem build *.gemspec
+      gem push llm_conductor-${GEM_VERSION}.gem
+      echo "Successfully published llm_conductor-${GEM_VERSION} to RubyGems!"
+      rm -f ~/.gem/credentials
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
