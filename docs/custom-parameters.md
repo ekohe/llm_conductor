@@ -1,6 +1,37 @@
-# Custom Parameters Usage Guide
+# Custom Parameters Guide
 
-The LLM Conductor gem now supports customizable parameters like `temperature`, `top_p`, and other provider-specific options. This guide explains how to use these parameters to fine-tune your LLM requests.
+Fine-tune LLM generation behavior with parameters like `temperature`, `top_p`, and more.
+
+## 🚀 Quick Reference
+
+### Temperature Guide
+| Value | Behavior | Use Case |
+|-------|----------|----------|
+| 0.0 | Deterministic | Testing, data extraction |
+| 0.3 | Very focused | Factual Q&A, summaries |
+| 0.7 | **Balanced (recommended)** | General purpose |
+| 0.9 | Creative | Stories, brainstorming |
+
+### Common Patterns
+
+```ruby
+# Deterministic (testing)
+params: { temperature: 0.0, seed: 42 }
+
+# Creative writing
+params: { temperature: 0.9, top_p: 0.95, repeat_penalty: 1.2 }
+
+# Factual/precise
+params: { temperature: 0.3, top_p: 0.85 }
+```
+
+### Provider Support
+| Provider | Status |
+|----------|--------|
+| Ollama | ✅ Supported |
+| OpenAI, Anthropic, Gemini, etc. | 🔜 Coming soon |
+
+---
 
 ## Overview
 
