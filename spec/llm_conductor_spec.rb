@@ -39,7 +39,7 @@ RSpec.describe LlmConductor do
       described_class.build_client(model:, type:, vendor: :openai)
 
       expect(LlmConductor::ClientFactory).to have_received(:build).with(
-        model:, type:, vendor: :openai
+        model:, type:, vendor: :openai, params: {}
       )
     end
 
@@ -49,7 +49,7 @@ RSpec.describe LlmConductor do
       described_class.build_client(model: 'custom-model', type: :custom, vendor: :openrouter)
 
       expect(LlmConductor::ClientFactory).to have_received(:build).with(
-        model: 'custom-model', type: :custom, vendor: :openrouter
+        model: 'custom-model', type: :custom, vendor: :openrouter, params: {}
       )
     end
   end
@@ -69,7 +69,7 @@ RSpec.describe LlmConductor do
     it 'builds a client and generates content' do
       result = described_class.generate(model:, type:, data:)
 
-      expect(described_class).to have_received(:build_client).with(model:, type:, vendor: nil)
+      expect(described_class).to have_received(:build_client).with(model:, type:, vendor: nil, params: {})
       expect(mock_client).to have_received(:generate).with(data:)
       expect(result).to eq(expected_result)
     end
@@ -78,7 +78,7 @@ RSpec.describe LlmConductor do
       described_class.generate(model:, type:, data:, vendor: :openrouter)
 
       expect(described_class).to have_received(:build_client).with(
-        model:, type:, vendor: :openrouter
+        model:, type:, vendor: :openrouter, params: {}
       )
     end
 

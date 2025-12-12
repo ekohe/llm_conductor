@@ -11,11 +11,12 @@ module LlmConductor
     class BaseClient
       include Prompts
 
-      attr_reader :model, :type
+      attr_reader :model, :type, :params
 
-      def initialize(model:, type:)
+      def initialize(model:, type:, params: {})
         @model = model
         @type = type
+        @params = params
       end
 
       def generate(data:)

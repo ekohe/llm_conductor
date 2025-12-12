@@ -37,7 +37,7 @@ RSpec.describe 'LlmConductor Simple Usage' do
 
       LlmConductor.generate(prompt: 'Hello world')
 
-      expect(LlmConductor::Clients::GptClient).to have_received(:new).with(model: 'gpt-4', type: :direct)
+      expect(LlmConductor::Clients::GptClient).to have_received(:new).with(model: 'gpt-4', type: :direct, params: {})
     end
 
     it 'calculates estimated cost for supported models' do

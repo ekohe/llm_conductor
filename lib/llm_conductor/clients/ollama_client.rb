@@ -7,7 +7,8 @@ module LlmConductor
       private
 
       def generate_content(prompt)
-        client.generate({ model:, prompt:, stream: false }).first['response']
+        request_params = { model:, prompt:, stream: false }.merge(params)
+        client.generate(request_params).first['response']
       end
 
       def client

@@ -550,7 +550,51 @@ response = LlmConductor.generate(
 )
 ```
 
-### 4. Response Object
+### 4. Custom Parameters (Temperature, Top-p, etc.)
+
+Fine-tune LLM generation with provider-specific parameters:
+
+```ruby
+# Control creativity with temperature
+response = LlmConductor.generate(
+  model: 'llama2',
+  prompt: 'Write a creative story about AI.',
+  vendor: :ollama,
+  params: { temperature: 0.9 }  # Higher = more creative
+)
+
+# Multiple parameters for fine-tuned control
+response = LlmConductor.generate(
+  model: 'llama2',
+  prompt: 'Explain quantum physics.',
+  vendor: :ollama,
+  params: {
+    temperature: 0.7,      # Balanced creativity
+    top_p: 0.9,           # Nucleus sampling
+    top_k: 40,            # Top-k sampling  
+    num_predict: 200,     # Max output tokens
+    repeat_penalty: 1.1   # Reduce repetition
+  }
+)
+
+# Deterministic output for testing
+response = LlmConductor.generate(
+  model: 'llama2',
+  prompt: 'What is 2 + 2?',
+  vendor: :ollama,
+  params: { 
+    temperature: 0.0,  # Completely deterministic
+    seed: 42           # Reproducible results
+  }
+)
+```
+
+**Currently Supported**: Ollama  
+**Coming Soon**: OpenAI, Anthropic, Gemini, Groq, OpenRouter, Z.ai
+
+For detailed parameter documentation and examples, see [PARAMS_USAGE.md](PARAMS_USAGE.md).
+
+### 5. Response Object
 
 All methods return a rich `LlmConductor::Response` object:
 
@@ -578,7 +622,7 @@ response.parse_json                    # Parse as JSON
 response.extract_code_block('json')    # Extract code blocks
 ```
 
-### 5. Error Handling
+### 6. Error Handling
 
 The gem provides comprehensive error handling:
 
