@@ -3,10 +3,10 @@
 module LlmConductor
   # Factory class for creating appropriate LLM client instances based on model and vendor
   class ClientFactory
-    def self.build(model:, type:, vendor: nil)
+    def self.build(model:, type:, vendor: nil, params: {})
       vendor ||= determine_vendor(model)
       client_class = client_class_for_vendor(vendor)
-      client_class.new(model:, type:)
+      client_class.new(model:, type:, params:)
     end
 
     def self.client_class_for_vendor(vendor)

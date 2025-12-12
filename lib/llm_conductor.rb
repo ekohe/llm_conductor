@@ -24,35 +24,37 @@ module LlmConductor
   class Error < StandardError; end
 
   # Main entry point for creating LLM clients
-  def self.build_client(model:, type:, vendor: nil)
-    ClientFactory.build(model:, type:, vendor:)
+  def self.build_client(model:, type:, vendor: nil, params: {})
+    ClientFactory.build(model:, type:, vendor:, params:)
   end
 
   # Unified generate method supporting both simple prompts and legacy template-based generation
-  def self.generate(model: nil, prompt: nil, type: nil, data: nil, vendor: nil)
+  # rubocop:disable Metrics/ParameterLists
+  def self.generate(model: nil, prompt: nil, type: nil, data: nil, vendor: nil, params: {})
     if prompt && !type && !data
-      generate_simple_prompt(model:, prompt:, vendor:)
+      generate_simple_prompt(model:, prompt:, vendor:, params:)
     elsif type && data && !prompt
-      generate_with_template(model:, type:, data:, vendor:)
+      generate_with_template(model:, type:, data:, vendor:, params:)
     else
       raise ArgumentError,
             "Invalid arguments. Use either: generate(prompt: 'text') or generate(type: :custom, data: {...})"
     end
   end
+  # rubocop:enable Metrics/ParameterLists
 
   class << self
     private
 
-    def generate_simple_prompt(model:, prompt:, vendor:)
+    def generate_simple_prompt(model:, prompt:, vendor:, params:)
       model ||= configuration.default_model
       vendor ||= ClientFactory.determine_vendor(model)
       client_class = client_class_for_vendor(vendor)
-      client = client_class.new(model:, type: :direct)
+      client = client_class.new(model:, type: :direct, params:)
       client.generate_simple(prompt:)
     end
 
-    def generate_with_template(model:, type:, data:, vendor:)
-      client = build_client(model:, type:, vendor:)
+    def generate_with_template(model:, type:, data:, vendor:, params:)
+      client = build_client(model:, type:, vendor:, params:)
       client.generate(data:)
     end
 
