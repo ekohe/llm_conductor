@@ -85,6 +85,119 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
     end
   end
 
+  describe 'params support' do
+    let(:params) { { temperature: 0.3, top_p: 0.85, max_tokens: 1024 } }
+    let(:client_with_params) { described_class.new(model:, type:, params:) }
+    let(:prompt) { 'Test prompt with params' }
+    let(:mock_gemini_client) { double('Gemini') }
+    let(:api_response) do
+      {
+        'candidates' => [
+          {
+            'content' => {
+              'parts' => [
+                { 'text' => 'Response with params' }
+              ]
+            }
+          }
+        ]
+      }
+    end
+
+    before do
+      allow(client_with_params).to receive(:client).and_return(mock_gemini_client)
+      allow(mock_gemini_client).to receive(:generate_content).and_return(api_response)
+    end
+
+    it 'stores params' do
+      expect(client_with_params.params).to eq(params)
+    end
+
+    it 'includes generationConfig in the payload when params are present' do
+      client_with_params.send(:generate_content, prompt)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        {
+          contents: [
+            { parts: [{ text: prompt }] }
+          ],
+          generationConfig: {
+            temperature: 0.3,
+            topP: 0.85,
+            maxOutputTokens: 1024
+          }
+        }
+      )
+    end
+
+    it 'maps snake_case keys to camelCase Gemini keys' do
+      client_with_all_params = described_class.new(
+        model:, type:,
+        params: { temperature: 0.5, top_p: 0.9, top_k: 40, max_output_tokens: 2048 }
+      )
+      allow(client_with_all_params).to receive(:client).and_return(mock_gemini_client)
+
+      client_with_all_params.send(:generate_content, prompt)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(
+          generationConfig: {
+            temperature: 0.5,
+            topP: 0.9,
+            topK: 40,
+            maxOutputTokens: 2048
+          }
+        )
+      )
+    end
+
+    it 'omits generationConfig when no params are provided' do
+      client.send(:generate_content, prompt)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        {
+          contents: [
+            { parts: [{ text: prompt }] }
+          ]
+        }
+      )
+    end
+
+    it 'omits generationConfig when params contain no mapped keys' do
+      client_unknown = described_class.new(model:, type:, params: { unknown_key: 'value' })
+      allow(client_unknown).to receive(:client).and_return(mock_gemini_client)
+
+      client_unknown.send(:generate_content, prompt)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        {
+          contents: [
+            { parts: [{ text: prompt }] }
+          ]
+        }
+      )
+    end
+
+    it 'handles string keys in params by converting to symbols' do
+      client_string_keys = described_class.new(
+        model:, type:,
+        params: { 'temperature' => 0.7, 'top_p' => 0.8 }
+      )
+      allow(client_string_keys).to receive(:client).and_return(mock_gemini_client)
+
+      client_string_keys.send(:generate_content, prompt)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(
+          generationConfig: {
+            temperature: 0.7,
+            topP: 0.8
+          }
+        )
+      )
+    end
+  end
+
   describe '#client (private)' do
     let(:mock_gemini_client) { double('Gemini') }
 

@@ -29,7 +29,8 @@ params: { temperature: 0.3, top_p: 0.85 }
 | Provider | Status |
 |----------|--------|
 | Ollama | ✅ Supported |
-| OpenAI, Anthropic, Gemini, etc. | 🔜 Coming soon |
+| Gemini | ✅ Supported |
+| OpenAI, Anthropic, etc. | 🔜 Coming soon |
 
 ---
 
@@ -130,6 +131,42 @@ response = LlmConductor.generate(
     temperature: 0.5,
     num_predict: 150
   }
+)
+```
+
+## Gemini Parameters Reference
+
+Below are common parameters supported by Google Gemini via `generationConfig`. For a complete list, see the [Gemini API docs](https://ai.google.dev/gemini-api/docs/text-generation).
+
+### Supported Parameters
+
+| Ruby Key | Gemini API Key | Type | Description |
+|----------|---------------|------|-------------|
+| `temperature` | `temperature` | Float | Controls randomness (0.0-2.0) |
+| `top_p` | `topP` | Float | Nucleus sampling threshold (0.0-1.0) |
+| `top_k` | `topK` | Integer | Top-k sampling limit |
+| `max_tokens` | `maxOutputTokens` | Integer | Maximum tokens to generate |
+| `max_output_tokens` | `maxOutputTokens` | Integer | Alias for max_tokens |
+| `candidate_count` | `candidateCount` | Integer | Number of candidates to return |
+| `stop_sequences` | `stopSequences` | Array | Stop sequences that end generation |
+
+### Gemini Usage Examples
+
+```ruby
+# Low temperature for focused output
+response = LlmConductor.generate(
+  model: 'gemini-2.5-flash',
+  prompt: 'Summarize this article.',
+  vendor: :gemini,
+  params: { temperature: 0.3, max_tokens: 500 }
+)
+
+# Creative writing with Gemini
+response = LlmConductor.generate(
+  model: 'gemini-2.5-flash',
+  prompt: 'Write a poem about the ocean.',
+  vendor: :gemini,
+  params: { temperature: 0.9, top_p: 0.95, top_k: 40 }
 )
 ```
 
@@ -311,11 +348,11 @@ Always refer to your provider's documentation for supported parameters.
 
 Currently, custom parameters are fully supported for:
 - ✅ **Ollama**
+- ✅ **Google (Gemini)** — maps snake_case Ruby keys to camelCase `generationConfig`
 
 Coming soon:
 - 🔜 OpenAI (GPT)
 - 🔜 Anthropic (Claude)
-- 🔜 Google (Gemini)
 - 🔜 Groq
 - 🔜 OpenRouter
 - 🔜 Z.ai
