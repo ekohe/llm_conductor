@@ -23,7 +23,7 @@ stages:
 before_script:
   - ruby -v
   - which ruby
-  - gem install bundler --no-document
+  - gem install bundler -v 2.7.2
   - bundle version
   - bundle install --jobs $(nproc)
 
@@ -45,7 +45,6 @@ test:
 check_version:
   stage: test
   script:
-    - chmod +x bin/check_version
     - bin/check_version
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
