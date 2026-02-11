@@ -17,7 +17,8 @@ cache: &global_cache
 stages:
   - test
   - build
-  - deploy
+  - install
+  - release
 
 # Before script - install dependencies
 before_script:
@@ -70,7 +71,7 @@ build_gem:
 
 # Test gem installation
 test_gem_install:
-  stage: deploy
+  stage: install
   cache:
     <<: *global_cache
     policy: pull
@@ -84,9 +85,9 @@ test_gem_install:
     - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_TAG
 
-# Deploy to RubyGems (automatic on main branch merge)
-deploy_rubygems:
-  stage: deploy
+# Release to RubyGems (automatic on main branch merge)
+release_rubygems:
+  stage: release
   cache:
     <<: *global_cache
     policy: pull
