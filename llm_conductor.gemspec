@@ -23,14 +23,22 @@ Gem::Specification.new do |spec|
   spec.metadata['changelog_uri'] = 'https://github.com/ekohe/llm_conductor/blob/main/CHANGELOG.md'
 
   # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  gemspec = File.basename(__FILE__)
-  spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
+  # Prefer `git ls-files` but fall back to Dir.glob when git is unavailable
+  # or returns empty (e.g. Docker volume mounts with safe.directory issues).
+  gemspec_file = File.basename(__FILE__)
+  git_files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
-      (f == gemspec) ||
+      (f == gemspec_file) ||
         f.start_with?(*%w[bin/ test/ spec/ features/ .git .github appveyor Gemfile])
     end
   end
+  spec.files = if git_files&.any?
+                 git_files
+               else
+                 Dir.glob('{config,docs,examples,exe,lib,sig}/**/*').push(
+                   'LICENSE', 'README.md', 'Rakefile', '.rspec', '.rubocop.yml', '.rubocop_todo.yml', '.ruby-version'
+                 ).select { |f| File.file?(f) }
+               end
   spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']

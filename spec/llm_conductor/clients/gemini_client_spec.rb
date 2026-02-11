@@ -152,6 +152,8 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
     end
 
     it 'omits generationConfig when no params are provided' do
+      allow(client).to receive(:client).and_return(mock_gemini_client)
+
       client.send(:generate_content, prompt)
 
       expect(mock_gemini_client).to have_received(:generate_content).with(
