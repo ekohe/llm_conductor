@@ -56,12 +56,23 @@ module LlmConductor
       }
     end
 
-    # Configure Google Gemini provider
-    def gemini(api_key: nil, **options)
+    # Configure Google Gemini provider (Generative Language API or Vertex AI)
+    #
+    # For the standard Generative Language API, provide api_key.
+    # For Vertex AI, provide project_id and optionally region (defaults to 'global').
+    # Authentication falls back to Application Default Credentials
+    # (ADC / GOOGLE_APPLICATION_CREDENTIALS) when neither file_path nor file_contents is supplied.
+    # Env vars (GEMINI_API_KEY, GOOGLE_VERTEX_PROJECT_ID, etc.) are only applied automatically
+    # on boot via setup_defaults_from_env — explicit calls use only what is passed.
+    def gemini(api_key: nil, project_id: nil, region: nil, file_path: nil, file_contents: nil, **options)
       @providers[:gemini] = {
-        api_key: api_key || ENV['GEMINI_API_KEY'],
+        api_key:,
+        project_id:,
+        region: region || 'global',
+        file_path:,
+        file_contents:,
         **options
-      }
+      }.compact
     end
 
     # Configure Groq provider
@@ -149,10 +160,21 @@ module LlmConductor
       anthropic if ENV['ANTHROPIC_API_KEY']
       openai if ENV['OPENAI_API_KEY']
       openrouter if ENV['OPENROUTER_API_KEY']
-      gemini if ENV['GEMINI_API_KEY']
+      setup_gemini_from_env
       groq if ENV['GROQ_API_KEY']
       zai if ENV['ZAI_API_KEY']
       ollama # Always configure Ollama with default URL
+    end
+
+    def setup_gemini_from_env
+      return unless ENV.values_at('GEMINI_API_KEY', 'GOOGLE_VERTEX_PROJECT_ID').any?
+
+      gemini(
+        api_key: ENV['GEMINI_API_KEY'],
+        project_id: ENV['GOOGLE_VERTEX_PROJECT_ID'],
+        region: ENV['GOOGLE_VERTEX_REGION'],
+        file_contents: ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS']
+      )
     end
   end
 

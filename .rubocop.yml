@@ -30,7 +30,7 @@ Lint/ConstantDefinitionInBlock:
   Enabled: false
 
 Metrics/ClassLength:
-  Max: 120
+  Max: 125
 
 Metrics/MethodLength:
   Max: 15
@@ -38,6 +38,8 @@ Metrics/MethodLength:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'lib/llm_conductor/client_factory.rb'
+    - 'examples/*.rb'
 
 RSpec/ExampleLength:
   Enabled: false
@@ -96,6 +98,12 @@ Metrics/AbcSize:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'examples/*.rb'
+
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/llm_conductor.rb'
+    - 'lib/llm_conductor/configuration.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -103,6 +111,7 @@ Metrics/CyclomaticComplexity:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'examples/*.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:

@@ -187,7 +187,7 @@ RSpec.describe LlmConductor::ClientFactory do
         end.to raise_error(ArgumentError,
                            'Unsupported vendor: unsupported. ' \
                            'Supported vendors: anthropic, claude, openai, gpt, openrouter, ' \
-                           'ollama, gemini, google, groq, zai')
+                           'ollama, gemini, google, vertex_ai, vertex, groq, zai')
       end
     end
   end

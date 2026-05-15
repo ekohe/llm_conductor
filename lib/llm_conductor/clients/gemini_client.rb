@@ -5,6 +5,7 @@ require 'base64'
 require 'net/http'
 require 'uri'
 require_relative 'concerns/vision_support'
+require_relative '../patches/gemini_vertex_api_key'
 
 module LlmConductor
   module Clients
@@ -32,7 +33,7 @@ module LlmConductor
 
         payload = {
           contents: [
-            { parts: }
+            { role: 'user', parts: }
           ]
         }
 
@@ -156,13 +157,32 @@ module LlmConductor
         @client ||= begin
           config = LlmConductor.configuration.provider_config(:gemini)
           Gemini.new(
-            credentials: {
-              service: 'generative-language-api',
-              api_key: config[:api_key]
-            },
+            credentials: build_credentials(config),
             options: { model: }
           )
         end
+      end
+
+      def build_credentials(config)
+        if config[:project_id] && config[:api_key]
+          { service: 'vertex-ai-api', region: config[:region], project_id: config[:project_id],
+            api_key: config[:api_key] }
+        elsif config[:project_id]
+          vertex_ai_credentials(config)
+        else
+          { service: 'generative-language-api', api_key: config[:api_key] }
+        end
+      end
+
+      def vertex_ai_credentials(config)
+        creds = {
+          service: 'vertex-ai-api',
+          region: config[:region],
+          project_id: config[:project_id]
+        }
+        creds[:file_path] = config[:file_path] if config[:file_path]
+        creds[:file_contents] = config[:file_contents] if config[:file_contents]
+        creds
       end
     end
   end
