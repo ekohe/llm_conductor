@@ -53,7 +53,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
       expect(mock_gemini_client).to have_received(:generate_content).with(
         {
           contents: [
-            { parts: [{ text: prompt }] }
+            { role: 'user', parts: [{ text: prompt }] }
           ]
         }
       )
@@ -119,7 +119,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
       expect(mock_gemini_client).to have_received(:generate_content).with(
         {
           contents: [
-            { parts: [{ text: prompt }] }
+            { role: 'user', parts: [{ text: prompt }] }
           ],
           generationConfig: {
             temperature: 0.3,
@@ -159,7 +159,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
       expect(mock_gemini_client).to have_received(:generate_content).with(
         {
           contents: [
-            { parts: [{ text: prompt }] }
+            { role: 'user', parts: [{ text: prompt }] }
           ]
         }
       )
@@ -174,7 +174,7 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
       expect(mock_gemini_client).to have_received(:generate_content).with(
         {
           contents: [
-            { parts: [{ text: prompt }] }
+            { role: 'user', parts: [{ text: prompt }] }
           ]
         }
       )
@@ -240,6 +240,83 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
         },
         options: { model: }
       )
+    end
+  end
+
+  describe '#client (private) — Vertex AI' do
+    let(:mock_gemini_client) { double('Gemini') }
+
+    before do
+      allow(Gemini).to receive(:new).and_return(mock_gemini_client)
+    end
+
+    context 'with project_id and region (ADC auth)' do
+      before do
+        LlmConductor.configuration.gemini(project_id: 'my-project', region: 'us-east4')
+      end
+
+      it 'uses vertex-ai-api service with project and region' do
+        client.send(:client)
+
+        expect(Gemini).to have_received(:new).with(
+          credentials: {
+            service: 'vertex-ai-api',
+            region: 'us-east4',
+            project_id: 'my-project'
+          },
+          options: { model: }
+        )
+      end
+    end
+
+    context 'with file_path for service account' do
+      before do
+        LlmConductor.configuration.gemini(
+          project_id: 'my-project',
+          region: 'us-east4',
+          file_path: '/path/to/service_account.json'
+        )
+      end
+
+      it 'includes file_path in credentials' do
+        client.send(:client)
+
+        expect(Gemini).to have_received(:new).with(
+          credentials: {
+            service: 'vertex-ai-api',
+            region: 'us-east4',
+            project_id: 'my-project',
+            file_path: '/path/to/service_account.json'
+          },
+          options: { model: }
+        )
+      end
+    end
+
+    context 'with file_contents for service account' do
+      let(:json_contents) { '{"type":"service_account","project_id":"my-project"}' }
+
+      before do
+        LlmConductor.configuration.gemini(
+          project_id: 'my-project',
+          region: 'us-east4',
+          file_contents: json_contents
+        )
+      end
+
+      it 'includes file_contents in credentials' do
+        client.send(:client)
+
+        expect(Gemini).to have_received(:new).with(
+          credentials: {
+            service: 'vertex-ai-api',
+            region: 'us-east4',
+            project_id: 'my-project',
+            file_contents: json_contents
+          },
+          options: { model: }
+        )
+      end
     end
   end
 

@@ -19,6 +19,8 @@ module LlmConductor
         ollama: Clients::OllamaClient,
         gemini: Clients::GeminiClient,
         google: Clients::GeminiClient,
+        vertex_ai: Clients::GeminiClient,
+        vertex: Clients::GeminiClient,
         groq: Clients::GroqClient,
         zai: Clients::ZaiClient
       }

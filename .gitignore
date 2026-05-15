@@ -98,3 +98,5 @@ coverage/
 
 # Dependency directories
 vendor/bundle/
+
+*.json

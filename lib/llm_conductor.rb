@@ -29,7 +29,6 @@ module LlmConductor
   end
 
   # Unified generate method supporting both simple prompts and legacy template-based generation
-  # rubocop:disable Metrics/ParameterLists
   def self.generate(model: nil, prompt: nil, type: nil, data: nil, vendor: nil, params: {})
     if prompt && !type && !data
       generate_simple_prompt(model:, prompt:, vendor:, params:)
@@ -40,7 +39,6 @@ module LlmConductor
             "Invalid arguments. Use either: generate(prompt: 'text') or generate(type: :custom, data: {...})"
     end
   end
-  # rubocop:enable Metrics/ParameterLists
 
   class << self
     private
