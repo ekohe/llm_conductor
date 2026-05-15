@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 # Connectivity test for all Gemini auth methods.
@@ -6,7 +7,10 @@
 #   Scenario A — Generative Language API (api_key)
 #     SCENARIO=api_key GEMINI_API_KEY=... ruby examples/gemini_usage.rb
 #
-#   Scenario B — Vertex AI via Application Default Credentials
+#   Scenario B — Vertex AI with account-bound API key
+#     SCENARIO=vertex_api_key GEMINI_API_KEY=... GOOGLE_VERTEX_PROJECT_ID=... ruby examples/gemini_usage.rb
+#
+#   Scenario C — Vertex AI via Application Default Credentials
 #     SCENARIO=adc \
 #     GOOGLE_VERTEX_PROJECT_ID=... \
 #     GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json \
@@ -24,7 +28,8 @@ MODEL  = 'gemini-2.5-flash'
 PROMPT = 'Say hello.'
 
 SCENARIOS = {
-  'api_key' => -> { ENV['GEMINI_API_KEY'] },
+  'api_key' => -> { ENV['GEMINI_API_KEY'] && !ENV['GOOGLE_VERTEX_PROJECT_ID'] },
+  'vertex_api_key' => -> { ENV['GEMINI_API_KEY'] && ENV['GOOGLE_VERTEX_PROJECT_ID'] },
   'adc' => -> { ENV['GOOGLE_VERTEX_PROJECT_ID'] && ENV['GOOGLE_APPLICATION_CREDENTIALS'] },
   'file_contents' => -> { ENV['GOOGLE_VERTEX_PROJECT_ID'] && ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS'] }
 }.freeze
@@ -34,6 +39,14 @@ def run_scenario(name)
   when 'api_key'
     LlmConductor.configure { |c| c.gemini(api_key: ENV.fetch('GEMINI_API_KEY')) }
     label = 'api_key'
+
+  when 'vertex_api_key'
+    LlmConductor.configure do |c|
+      c.gemini(api_key: ENV.fetch('GEMINI_API_KEY'),
+               project_id: ENV.fetch('GOOGLE_VERTEX_PROJECT_ID'),
+               region: ENV['GOOGLE_VERTEX_REGION'])
+    end
+    label = 'vertex_ai/api_key'
 
   when 'adc'
     LlmConductor.configure do |c|
@@ -63,7 +76,7 @@ end
 scenario = ENV['SCENARIO']
 
 if scenario
-  abort "Unknown SCENARIO=#{scenario}. Use: api_key | adc | file_contents" unless SCENARIOS.key?(scenario)
+  abort "Unknown SCENARIO=#{scenario}. Use: api_key | vertex_api_key | adc | file_contents" unless SCENARIOS.key?(scenario)
   run_scenario(scenario)
 else
   ran = 0

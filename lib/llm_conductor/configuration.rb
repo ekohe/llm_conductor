@@ -62,16 +62,15 @@ module LlmConductor
     # For Vertex AI, provide project_id and optionally region (defaults to 'global').
     # Authentication falls back to Application Default Credentials
     # (ADC / GOOGLE_APPLICATION_CREDENTIALS) when neither file_path nor file_contents is supplied.
-    #   file_path     - explicit path to a service account JSON key file (bypasses ADC)
-    #   file_contents - inline JSON content of a service account key file;
-    #                   falls back to GOOGLE_CREDENTIALS_FILE_CONTENTS env var
+    # Env vars (GEMINI_API_KEY, GOOGLE_VERTEX_PROJECT_ID, etc.) are only applied automatically
+    # on boot via setup_defaults_from_env — explicit calls use only what is passed.
     def gemini(api_key: nil, project_id: nil, region: nil, file_path: nil, file_contents: nil, **options)
       @providers[:gemini] = {
-        api_key: api_key || ENV['GEMINI_API_KEY'],
-        project_id: project_id || ENV['GOOGLE_VERTEX_PROJECT_ID'],
-        region: region || ENV['GOOGLE_VERTEX_REGION'] || 'global',
+        api_key:,
+        project_id:,
+        region: region || 'global',
         file_path:,
-        file_contents: file_contents || ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS'],
+        file_contents:,
         **options
       }.compact
     end
@@ -161,10 +160,21 @@ module LlmConductor
       anthropic if ENV['ANTHROPIC_API_KEY']
       openai if ENV['OPENAI_API_KEY']
       openrouter if ENV['OPENROUTER_API_KEY']
-      gemini if ENV.values_at('GEMINI_API_KEY', 'GOOGLE_VERTEX_PROJECT_ID').any?
+      setup_gemini_from_env
       groq if ENV['GROQ_API_KEY']
       zai if ENV['ZAI_API_KEY']
       ollama # Always configure Ollama with default URL
+    end
+
+    def setup_gemini_from_env
+      return unless ENV.values_at('GEMINI_API_KEY', 'GOOGLE_VERTEX_PROJECT_ID').any?
+
+      gemini(
+        api_key: ENV['GEMINI_API_KEY'],
+        project_id: ENV['GOOGLE_VERTEX_PROJECT_ID'],
+        region: ENV['GOOGLE_VERTEX_REGION'],
+        file_contents: ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS']
+      )
     end
   end
 

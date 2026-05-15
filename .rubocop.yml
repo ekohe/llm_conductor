@@ -30,7 +30,7 @@ Lint/ConstantDefinitionInBlock:
   Enabled: false
 
 Metrics/ClassLength:
-  Max: 120
+  Max: 125
 
 Metrics/MethodLength:
   Max: 15
@@ -111,6 +111,7 @@ Metrics/CyclomaticComplexity:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'examples/*.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
