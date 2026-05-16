@@ -167,12 +167,16 @@ module LlmConductor
     end
 
     def setup_gemini_from_env
-      return unless ENV.values_at('GEMINI_API_KEY', 'GOOGLE_VERTEX_PROJECT_ID').any?
+      return unless ENV.values_at(
+        'GEMINI_API_KEY', 'GOOGLE_VERTEX_PROJECT_ID',
+        'GOOGLE_APPLICATION_CREDENTIALS', 'GOOGLE_CREDENTIALS_FILE_CONTENTS'
+      ).any?
 
       gemini(
         api_key: ENV['GEMINI_API_KEY'],
         project_id: ENV['GOOGLE_VERTEX_PROJECT_ID'],
         region: ENV['GOOGLE_VERTEX_REGION'],
+        file_path: ENV['GOOGLE_APPLICATION_CREDENTIALS'],
         file_contents: ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS']
       )
     end

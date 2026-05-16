@@ -10,15 +10,13 @@
 #   Scenario B — Vertex AI with account-bound API key
 #     SCENARIO=vertex_api_key GEMINI_API_KEY=... GOOGLE_VERTEX_PROJECT_ID=... ruby examples/gemini_usage.rb
 #
-#   Scenario C — Vertex AI via Application Default Credentials
+#   Scenario C — Vertex AI via service account file (GOOGLE_APPLICATION_CREDENTIALS)
 #     SCENARIO=adc \
-#     GOOGLE_VERTEX_PROJECT_ID=... \
 #     GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json \
 #     ruby examples/gemini_usage.rb
 #
-#   Scenario C — Vertex AI via credentials file contents
+#   Scenario D — Vertex AI via credentials file contents
 #     SCENARIO=file_contents \
-#     GOOGLE_VERTEX_PROJECT_ID=... \
 #     GOOGLE_CREDENTIALS_FILE_CONTENTS=$(cat /path/to/sa.json) \
 #     ruby examples/gemini_usage.rb
 
@@ -30,8 +28,8 @@ PROMPT = 'Say hello.'
 SCENARIOS = {
   'api_key' => -> { ENV['GEMINI_API_KEY'] && !ENV['GOOGLE_VERTEX_PROJECT_ID'] },
   'vertex_api_key' => -> { ENV['GEMINI_API_KEY'] && ENV['GOOGLE_VERTEX_PROJECT_ID'] },
-  'adc' => -> { ENV['GOOGLE_VERTEX_PROJECT_ID'] && ENV['GOOGLE_APPLICATION_CREDENTIALS'] },
-  'file_contents' => -> { ENV['GOOGLE_VERTEX_PROJECT_ID'] && ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS'] }
+  'adc' => -> { ENV['GOOGLE_APPLICATION_CREDENTIALS'] },
+  'file_contents' => -> { ENV['GOOGLE_CREDENTIALS_FILE_CONTENTS'] }
 }.freeze
 
 def run_scenario(name)
@@ -50,15 +48,14 @@ def run_scenario(name)
 
   when 'adc'
     LlmConductor.configure do |c|
-      c.gemini(project_id: ENV.fetch('GOOGLE_VERTEX_PROJECT_ID'),
+      c.gemini(file_path: ENV.fetch('GOOGLE_APPLICATION_CREDENTIALS'),
                region: ENV['GOOGLE_VERTEX_REGION'])
     end
     label = 'vertex_ai/adc'
 
   when 'file_contents'
     LlmConductor.configure do |c|
-      c.gemini(project_id: ENV.fetch('GOOGLE_VERTEX_PROJECT_ID'),
-               region: ENV['GOOGLE_VERTEX_REGION'],
+      c.gemini(region: ENV['GOOGLE_VERTEX_REGION'],
                file_contents: ENV.fetch('GOOGLE_CREDENTIALS_FILE_CONTENTS'))
     end
     label = 'vertex_ai/file_contents'

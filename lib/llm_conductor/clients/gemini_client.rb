@@ -167,7 +167,7 @@ module LlmConductor
         if config[:project_id] && config[:api_key]
           { service: 'vertex-ai-api', region: config[:region], project_id: config[:project_id],
             api_key: config[:api_key] }
-        elsif config[:project_id]
+        elsif config[:project_id] || config[:file_path] || config[:file_contents]
           vertex_ai_credentials(config)
         else
           { service: 'generative-language-api', api_key: config[:api_key] }
