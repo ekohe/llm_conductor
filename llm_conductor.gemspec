@@ -46,6 +46,8 @@ Gem::Specification.new do |spec|
   # Core dependencies for LLM providers
   spec.add_dependency 'activesupport', '>= 6.0'
   spec.add_dependency 'anthropic', '~> 1.7'
+  # csv was removed from Ruby's default gems in 3.4; the eval ReportBuilder needs it.
+  spec.add_dependency 'csv', '~> 3.0'
   spec.add_dependency 'gemini-ai', '~> 4.3'
   spec.add_dependency 'groq', '~> 0.3'
   spec.add_dependency 'ollama-ai', '~> 1.3'

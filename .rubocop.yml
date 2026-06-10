@@ -31,6 +31,10 @@ Lint/ConstantDefinitionInBlock:
 
 Metrics/ClassLength:
   Max: 130
+  Exclude:
+    # Eval engine classes are faithful ports of the Rails prototype; their size
+    # mirrors the reference implementation.
+    - 'lib/llm_conductor/eval/**/*'
 
 Metrics/MethodLength:
   Max: 15
@@ -39,6 +43,7 @@ Metrics/MethodLength:
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
     - 'lib/llm_conductor/client_factory.rb'
+    - 'lib/llm_conductor/eval/**/*'
     - 'examples/*.rb'
 
 RSpec/ExampleLength:
@@ -98,12 +103,15 @@ Metrics/AbcSize:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'lib/llm_conductor/eval/**/*'
     - 'examples/*.rb'
 
 Metrics/ParameterLists:
   Exclude:
     - 'lib/llm_conductor.rb'
     - 'lib/llm_conductor/configuration.rb'
+    - 'lib/llm_conductor/eval.rb'
+    - 'lib/llm_conductor/eval/**/*'
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -111,6 +119,7 @@ Metrics/CyclomaticComplexity:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'lib/llm_conductor/eval/**/*'
     - 'examples/*.rb'
 
 Metrics/PerceivedComplexity:
@@ -118,6 +127,7 @@ Metrics/PerceivedComplexity:
     - 'lib/llm_conductor/prompts.rb'
     - 'lib/llm_conductor/clients/openrouter_client.rb'
     - 'lib/llm_conductor/clients/zai_client.rb'
+    - 'lib/llm_conductor/eval/**/*'
 
 Layout/LineLength:
   Max: 125
