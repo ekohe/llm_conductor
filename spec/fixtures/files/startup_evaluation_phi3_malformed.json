@@ -1,0 +1,67 @@
+{
+  "overall_score": 45,
+  "recommendation": "PASS",
+  "summary": "Valhalla Logistics DBA Unishippers is a private startup with strong growth potential but lacks clear strategic fit and sufficient evidence for market business health.",
+  "sections": [
+    {
+      "key": "startup_eligibility",
+      "title": "Startup Eligibility",
+      "score": 60,
+      "summary": "Private startup with a strong year-over-year employee growth and website visits but unknown funding status.",
+      "criteria": [
+        { "label": "Private / Public Status", "body": "The company is private." },
+        { "label": "Lifecycle Stage", "body": "Founded in 2018, indicating a pre-seed or early stage of development with significant growth potential." },
+        { "label": "Product Maturity", "body": "High employee count and website visits suggest product maturity but no explicit mention of market validation." },
+        { "label": "Customer Validation", "body": "Unsupported. No revenue data provided, making it unclear if there is strong customer demand for the service." },
+        { "label": "Revenue Quality", "body": "Unsupported. Revenue and venture scalability cannot be assessed without explicit financial information." },
+        { "label": "Venture Scalability", "body": "Unsupported due to lack of revenue data, but high employee growth suggests potential for scaling if market demand exists." }
+      ]
+    },
+    {
+      "key": "strategic_fit",
+      "title": "Strategic Fit",
+      "score": 25,
+      "summary": "Startup operates in a sector outside Elephant's focus and lacks strategic priority fit.",
+      "criteria": [
+        { "label": "Sector / Theme Fit", "body": "The company is focused on truck transportation and logistics, which are not within the sectors of interest for Elephant." },
+        { "label": "Strategic Priority Fit", "body": "Elephant's strategic priority does not align with this startup due to its sector focus outside SaaS/Enterprise Software and lack of emphasis on durable unit economics or product-market fit." },
+        { "label": "Market Belief Fit", "body": "Unsupported. No market validation data provided, making it unclear if there is a strong belief in the company's potential within its sector." },
+        { "label": "Why-Now Fit", "body": "Unsupported due to lack of information on current industry trends and customer needs." },
+        { "label": "Thesis Centrality", "body": "Elephant prioritizes software businesses with strong product-market fit, which is not evident for this logistics company." },
+        { "label": "Opportunity Quality Fit", "body": "Unsupported. No evidence of a compelling opportunity or market need provided." }
+      ]
+    },
+    {
+      "key": "market_business_potential",
+      "title": "Market & Business Potential",
+      "score": 50,
+      "summary": "High employee growth and website visits suggest potential for market presence but lack of data on product performance.",
+      "criteria": [
+        { "label": "Product Performance", "body": "Unsupported. No explicit mention or evidence of strong product-market fit." },
+        { "metric": "Adoption Quality", "signal": "Weak", "evidence": "No data on customer adoption rates provided." },
+        { "metric": "Revenue Quality", "signal": "Missing", "evidence": "Unsupported. No revenue or financial information available." },
+        { "metric": "CAC Efficiency", "signal": "Mixed", "evidence": "No data on customer acquisition costs provided, but high employee growth suggests potential for efficiency if market demand exists." },
+        { "metric": "Technical Maturity", "signal": "Weak", "evidence": "No mention of technology maturity or innovation in the description." }
+      ]
+    },
+    {
+      "key": "vc_value_add_synergy",
+      "title": "VC Value-Add Synergy",
+      "score": 30,
+      "summary": "Startup could benefit from Elephant's operational support and network access.",
+      "criteria": [
+        { "label": "Distribution / GTM Leverage", "body": "Potential for leveraging Elephant's Boston/NYC tech networks." },
+        { "label": "Network / Partner Leverage", "body": "Elephant could provide valuable partnerships given its network and focus on logistics startups.", }
+        { "label": "Cross-border / Platform Support", "body": "Unsupported. No information provided about international expansion or platform needs." },
+        { "label": "Follow-on Financing Support", "body": "Potential for follow-on financing if the company demonstrates growth and potential, but more data needed.", }
+        { "label": "Portfolio Adjacency", "body": "Elephant could add value through portfolio adjacency given its experience with logistics startups." },
+        "metrics": [
+          { "metric": "Adoption Quality", "signal": "Weak", "evidence": "No data on customer adoption rates provided." },
+          { "metric": "Revenue Quality", "signal": "Missing", "evidence": "Unsupported. No revenue or financial information available." },
+          { "metric": "CAC Efficiency", "signal": "Mixed", "evidence": "No data on customer acquisition costs provided, but high employee growth suggests potential for efficiency if market demand exists." },
+          { "metric": "Technical Maturity", "signal": "Weak", "evidence": "No mention of technology maturity or innovation in the description." }
+        ]
+      ]
+    }
+  ]
+}

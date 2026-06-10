@@ -100,3 +100,6 @@ coverage/
 vendor/bundle/
 
 *.json
+
+# ...but test fixtures (incl. JSON) must be tracked so specs pass in CI
+!spec/fixtures/**
