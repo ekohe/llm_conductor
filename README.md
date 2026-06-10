@@ -10,6 +10,7 @@ A unified Ruby interface for multiple Language Model providers from [Ekohe](http
 - 🔧 **Custom Parameters** - Fine-tune with temperature, top_p, and more
 - 💰 **Cost Tracking** - Automatic token counting and cost estimation
 - ⚡ **Smart Configuration** - Environment variables or code-based setup
+- 📊 **Model Evaluation** - Compare models/vendors on cost, latency, tokens & LLM-judged quality (opt-in)
 
 ## Installation
 
@@ -318,6 +319,7 @@ See [`examples/model_eval_usage.rb`](examples/model_eval_usage.rb) for a complet
 
 - **[Custom Parameters Guide](docs/custom-parameters.md)** - Temperature, top_p, and more
 - **[Vision Support Guide](docs/vision-support.md)** - Using images with LLMs
+- **[Model Evaluation](#model-evaluation-opt-in)** - Compare models on cost, latency & LLM-judged quality
 - **[Examples](examples/)** - Working code examples for all providers
 
 ## Examples
