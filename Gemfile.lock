@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    llm_conductor (1.8.0)
+    llm_conductor (1.8.1)
       activesupport (>= 6.0)
       anthropic (~> 1.7)
       csv (~> 3.0)
