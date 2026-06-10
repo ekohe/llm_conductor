@@ -252,6 +252,68 @@ else
 end
 ```
 
+## Model Evaluation (opt-in)
+
+Which model/vendor is best for *your* prompt? The eval harness runs the same
+prompt across N `(model, vendor)` pairs over M inputs and compares them on
+**cost, latency, tokens, and LLM-judged quality** — three of which `generate`
+already produces for free.
+
+It's behind a separate require so core users pay nothing:
+
+```ruby
+require 'llm_conductor/eval'
+
+# 1. Describe how to evaluate your feature (the only feature-specific code).
+class ArticleSummarySpec < LlmConductor::Eval::Spec
+  def prompt_type        = :summarize_text                 # a registered prompt type
+  def input_id(article)  = article[:id]
+  def input_label(article) = article[:title]
+  def build_data(article) = { content: article[:body] }    # payload for generate(type:, data:)
+
+  # { score:, bucket: } — bucket is any discrete label; powers disagreement detection.
+  def output_summary(parsed) = { score: parsed['rating'], bucket: parsed['verdict'] }
+
+  def judge_rubric_excerpt = 'A good summary is faithful, concise, and covers the key points.'
+  def judge_dimensions
+    [{ key: 'faithfulness', description: 'no hallucinations vs. the source' },
+     { key: 'coverage',     description: 'captures the key points' }]
+  end
+end
+
+# 2. Run it. `inputs` is ANY enumerable — selection is YOUR job, never the gem's.
+report = LlmConductor::Eval.run(
+  spec:   ArticleSummarySpec.new,
+  inputs: my_articles,
+  models: [                                       # caller-owned; no baked-in defaults
+    { model: 'phi4-mini',        vendor: :ollama },
+    { model: 'gemini-2.5-flash', vendor: :gemini },
+    { model: 'gpt-4o-mini',      vendor: :openai }
+  ],
+  judge:  { model: 'llama-3.3-70b-versatile', vendor: :groq },  # default; needs Groq creds
+  store:  LlmConductor::Eval::Store::FileStore.new('tmp/llm_eval') # or in-memory (default)
+)
+
+report.summary       # per-model aggregates: parse-OK%, mean quality, p50/p95 latency, cost
+report.to_markdown   # decision-aid report (you persist it)
+report.to_csv        # full per-row data
+report.needs_review  # rows flagged for a human (bucket disagreement / borderline / errors)
+```
+
+**Judge bias matters.** The judge defaults to Groq's `llama-3.3-70b-versatile`
+precisely because it sits *outside* the Gemini/OpenAI/Ollama candidate families —
+a model grading its own family scores it high. Any row where the judged model
+equals the judge model is flagged `self_judge=true` so you can discount it.
+
+Cheap re-runs reuse stored candidate outputs — no re-calling the candidates:
+
+```ruby
+LlmConductor::Eval.judge_only(run_id:, spec:, store:, judge: { model: 'gemini-2.5-pro', vendor: :gemini })
+LlmConductor::Eval.report_only(run_id:, spec:, store:)
+```
+
+See [`examples/model_eval_usage.rb`](examples/model_eval_usage.rb) for a complete runnable example.
+
 ## Documentation
 
 - **[Custom Parameters Guide](docs/custom-parameters.md)** - Temperature, top_p, and more
@@ -272,6 +334,7 @@ Check the [examples/](examples/) directory for comprehensive examples:
 - `data_builder_usage.rb` - Data builder patterns
 - `prompt_registration.rb` - Custom prompt classes
 - `rag_usage.rb` - Retrieval-Augmented Generation
+- `model_eval_usage.rb` - Model evaluation harness (cost/latency/quality comparison)
 
 Run any example:
 
