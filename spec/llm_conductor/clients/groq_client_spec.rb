@@ -44,6 +44,18 @@ RSpec.describe LlmConductor::Clients::GroqClient do
       )
     end
 
+    it 'passes through max_tokens and temperature from params' do
+      with_params = described_class.new(model:, type:, params: { max_tokens: 4096, temperature: 0 })
+      allow(with_params).to receive(:client).and_return(mock_groq_client)
+
+      with_params.send(:generate_content, prompt)
+
+      expect(mock_groq_client).to have_received(:chat).with(
+        [{ role: 'user', content: prompt }],
+        model_id: model, max_tokens: 4096, temperature: 0
+      )
+    end
+
     it 'extracts and returns the content from API response' do
       result = client.send(:generate_content, prompt)
 
@@ -70,7 +82,9 @@ RSpec.describe LlmConductor::Clients::GroqClient do
       client.send(:client)
 
       expect(Groq::Client).to have_received(:new).with(
-        api_key: 'test_api_key'
+        api_key: 'test_api_key',
+        max_tokens: described_class::DEFAULT_MAX_TOKENS,
+        request_timeout: described_class::DEFAULT_REQUEST_TIMEOUT
       )
     end
 
@@ -89,7 +103,9 @@ RSpec.describe LlmConductor::Clients::GroqClient do
       client.send(:client)
 
       expect(Groq::Client).to have_received(:new).with(
-        api_key: 'different_key'
+        api_key: 'different_key',
+        max_tokens: described_class::DEFAULT_MAX_TOKENS,
+        request_timeout: described_class::DEFAULT_REQUEST_TIMEOUT
       )
     end
   end
