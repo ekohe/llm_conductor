@@ -34,7 +34,7 @@ puts '-' * 80
 
 begin
   response = LlmConductor.generate(
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     vendor: :anthropic,
     prompt: {
       text: 'What is in this image? Please describe it in detail.',
@@ -56,7 +56,7 @@ puts "\n2. Multiple Images Comparison"
 puts '-' * 80
 
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: {
     text: 'Compare these two images. What are the main differences?',
@@ -75,7 +75,7 @@ puts "\n3. Image with Specific Question"
 puts '-' * 80
 
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: {
     text: 'Is there a wooden boardwalk visible in this image? If yes, describe its condition.',
@@ -91,7 +91,7 @@ puts "\n4. Raw Format (Advanced)"
 puts '-' * 80
 
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: [
     { type: 'image',
@@ -109,7 +109,7 @@ puts "\n5. Text-Only Request (Backward Compatible)"
 puts '-' * 80
 
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: 'What is the capital of France?'
 )
@@ -122,7 +122,7 @@ puts "\n6. Image Analysis with Detailed Instructions"
 puts '-' * 80
 
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: {
     text: 'Analyze this image and provide: 1) Main subjects, 2) Colors and lighting, 3) Mood or atmosphere, 4) Any notable details',

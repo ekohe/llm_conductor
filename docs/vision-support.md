@@ -16,7 +16,7 @@ end
 
 # Analyze an image
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: {
     text: 'What is in this image?',
@@ -125,9 +125,8 @@ puts response.output
 
 For vision tasks via Anthropic API:
 
-- **`claude-sonnet-4-20250514`** - Claude Sonnet 4 (latest, best for vision) ✅
-- **`claude-opus-4-20250514`** - Claude Opus 4 (maximum quality)
-- **`claude-opus-4-1-20250805`** - Claude Opus 4.1 (newest flagship model)
+- **`claude-sonnet-4-6`** - Claude Sonnet 4.6 (best balance for vision) ✅
+- **`claude-opus-4-8`** - Claude Opus 4.8 (maximum quality)
 
 ### GPT Models (OpenAI)
 
@@ -242,7 +241,7 @@ response = LlmConductor.generate(
 **Claude Format:**
 ```ruby
 response = LlmConductor.generate(
-  model: 'claude-sonnet-4-20250514',
+  model: 'claude-sonnet-4-6',
   vendor: :anthropic,
   prompt: [
     { type: 'image', source: { type: 'url', url: 'https://example.com/image.jpg' } },
