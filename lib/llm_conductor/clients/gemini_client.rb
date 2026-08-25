@@ -5,6 +5,7 @@ require 'base64'
 require 'net/http'
 require 'uri'
 require_relative 'concerns/vision_support'
+require_relative 'concerns/gemini_generation_config'
 require_relative '../patches/gemini_vertex_api_key'
 
 module LlmConductor
@@ -13,19 +14,9 @@ module LlmConductor
     # Supports both text-only and multimodal (vision) requests
     class GeminiClient < BaseClient
       include Concerns::VisionSupport
+      include Concerns::GeminiGenerationConfig
 
       private
-
-      # Gemini REST API uses camelCase keys in generationConfig.
-      PARAM_KEY_MAP = {
-        temperature: :temperature,
-        top_p: :topP,
-        top_k: :topK,
-        max_tokens: :maxOutputTokens,
-        max_output_tokens: :maxOutputTokens,
-        candidate_count: :candidateCount,
-        stop_sequences: :stopSequences
-      }.freeze
 
       def generate_content(prompt)
         content = format_content(prompt)
@@ -43,20 +34,6 @@ module LlmConductor
 
         response = client.generate_content(payload)
         response.dig('candidates', 0, 'content', 'parts', 0, 'text')
-      end
-
-      # Build Gemini generationConfig from params hash.
-      # Maps snake_case Ruby keys to camelCase Gemini API keys.
-      # @return [Hash, nil] generationConfig hash or nil if no mapped params
-      def build_generation_config
-        return unless params.is_a?(Hash) && params.any?
-
-        gen_cfg = {}
-        params.each do |key, value|
-          mapped = PARAM_KEY_MAP[key.to_sym]
-          gen_cfg[mapped] = value if mapped
-        end
-        gen_cfg.any? ? gen_cfg : nil
       end
 
       # Build parts array for Gemini API from formatted content

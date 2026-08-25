@@ -108,7 +108,7 @@ end
 |----------|-------------|--------|---------------|
 | OpenAI (GPT) | ✅ `gpt-*` | ✅ | 🔜 |
 | Anthropic (Claude) | ✅ `claude-*` | ✅ | 🔜 |
-| Google (Gemini) | ✅ `gemini-*` | ✅ | 🔜 |
+| Google (Gemini) | ✅ `gemini-*` | ✅ | ✅ |
 | Groq | ✅ `llama/mixtral` | ❌ | 🔜 |
 | Ollama | ✅ (default) | ❌ | ✅ |
 | OpenRouter | 🔧 Manual | ✅ | 🔜 |
@@ -149,6 +149,20 @@ response = LlmConductor.generate(
   params: { temperature: 0.0, seed: 42 }
 )
 ```
+
+### Fast Gemini Calls (Minimal Thinking)
+
+```ruby
+response = LlmConductor.generate(
+  model: 'gemini-3.5-flash-lite',
+  prompt: 'Extract the company name from: ...',
+  vendor: :gemini,
+  params: { thinking_level: 'minimal' }
+)
+```
+
+Sent to Gemini as `generationConfig.thinkingConfig.thinkingLevel`. See
+[Custom Parameters](docs/custom-parameters.md#gemini-thinking-configuration).
 
 ### Vision Analysis
 
@@ -328,6 +342,7 @@ Check the [examples/](examples/) directory for comprehensive examples:
 
 - `simple_usage.rb` - Basic text generation
 - `ollama_params_usage.rb` - Custom parameters with Ollama
+- `gemini_thinking_usage.rb` - Gemini thinking configuration (`thinkingConfig`)
 - `gpt_vision_usage.rb` - Vision with OpenAI
 - `claude_vision_usage.rb` - Vision with Anthropic
 - `gemini_vision_usage.rb` - Vision with Gemini

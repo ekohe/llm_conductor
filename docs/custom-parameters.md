@@ -149,6 +149,13 @@ Below are common parameters supported by Google Gemini via `generationConfig`. F
 | `max_output_tokens` | `maxOutputTokens` | Integer | Alias for max_tokens |
 | `candidate_count` | `candidateCount` | Integer | Number of candidates to return |
 | `stop_sequences` | `stopSequences` | Array | Stop sequences that end generation |
+| `thinking_config` | `thinkingConfig` | Hash | Gemini 3.x thinking controls (see below) |
+| `thinking_level` | `thinkingConfig.thinkingLevel` | String | Thinking depth: `'minimal'`, `'low'`, `'high'` |
+| `thinking_budget` | `thinkingConfig.thinkingBudget` | Integer | Token budget for thinking (`0` disables it) |
+| `include_thoughts` | `thinkingConfig.includeThoughts` | Boolean | Return the thought summary alongside the answer |
+
+Unsupported keys are skipped and logged as a warning through
+`LlmConductor.configuration.logger` — they are never dropped silently.
 
 ### Gemini Usage Examples
 
@@ -168,6 +175,36 @@ response = LlmConductor.generate(
   vendor: :gemini,
   params: { temperature: 0.9, top_p: 0.95, top_k: 40 }
 )
+```
+
+### Gemini Thinking Configuration
+
+Gemini 3.x models think before answering. Cutting that budget down is the single
+biggest latency lever available on the fast models, so the thinking controls are
+exposed through the same `params` hash:
+
+```ruby
+# Fastest path — minimal thinking (flat convenience key)
+response = LlmConductor.generate(
+  model: 'gemini-3.5-flash-lite',
+  prompt: 'Extract the company name from: ...',
+  vendor: :gemini,
+  params: { thinking_level: 'minimal', temperature: 0.0 }
+)
+
+# Nested form — mirrors the API shape, accepts snake_case or camelCase
+response = LlmConductor.generate(
+  model: 'gemini-3.5-flash-lite',
+  prompt: 'Extract the company name from: ...',
+  vendor: :gemini,
+  params: { thinking_config: { thinking_level: 'minimal', thinking_budget: 0 } }
+)
+```
+
+Both forms are merged into the request as:
+
+```json
+{ "generationConfig": { "thinkingConfig": { "thinkingLevel": "minimal" } } }
 ```
 
 ## Ollama Parameters Reference
@@ -348,7 +385,8 @@ Always refer to your provider's documentation for supported parameters.
 
 Currently, custom parameters are fully supported for:
 - ✅ **Ollama**
-- ✅ **Google (Gemini)** — maps snake_case Ruby keys to camelCase `generationConfig`
+- ✅ **Google (Gemini)** — maps snake_case Ruby keys to camelCase `generationConfig`,
+  including `thinkingConfig` for Gemini 3.x thinking controls
 
 Coming soon:
 - 🔜 OpenAI (GPT)
@@ -364,6 +402,8 @@ Coming soon:
 1. Check parameter spelling (case-sensitive)
 2. Verify your provider supports the parameter
 3. Check parameter value types (integer vs float vs string)
+4. Set `config.logger` — Gemini logs a warning for every param it cannot map,
+   e.g. `Skipping generationConfig param :reasoning_effort: no Gemini API mapping.`
 
 ### Unexpected Output
 
@@ -379,7 +419,9 @@ Coming soon:
 
 ## Examples
 
-See the complete example file: [examples/ollama_params_usage.rb](examples/ollama_params_usage.rb)
+See the complete example files:
+- [examples/ollama_params_usage.rb](../examples/ollama_params_usage.rb)
+- [examples/gemini_thinking_usage.rb](../examples/gemini_thinking_usage.rb)
 
 ## Resources
 
