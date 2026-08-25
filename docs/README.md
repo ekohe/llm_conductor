@@ -11,8 +11,8 @@ Learn how to fine-tune LLM generation with parameters like `temperature`, `top_p
 - Provider-specific parameters
 - Best practices and use cases
 
-**Currently supported**: Ollama  
-**Coming soon**: OpenAI, Anthropic, Gemini, Groq, OpenRouter, Z.ai
+**Currently supported**: Ollama, Gemini (including Gemini 3.x `thinkingConfig`)  
+**Coming soon**: OpenAI, Anthropic, Groq, OpenRouter, Z.ai
 
 ### [Vision Support](vision-support.md)
 Complete guide to using vision/multimodal capabilities. Includes:

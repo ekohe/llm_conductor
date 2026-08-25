@@ -200,6 +200,214 @@ RSpec.describe LlmConductor::Clients::GeminiClient do
     end
   end
 
+  describe 'generationConfig key mapping' do
+    let(:prompt) { 'Test prompt for generationConfig' }
+    let(:mock_gemini_client) { double('Gemini') }
+    let(:api_response) do
+      { 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Response' }] } }] }
+    end
+
+    before do
+      allow(mock_gemini_client).to receive(:generate_content).and_return(api_response)
+    end
+
+    # Sends a real request through the client so assertions cover the payload the
+    # Gemini API actually receives, not just the private builder.
+    def send_with(params)
+      instance = described_class.new(model:, type:, params:)
+      allow(instance).to receive(:client).and_return(mock_gemini_client)
+      instance.send(:generate_content, prompt)
+    end
+
+    def generation_config_from_last_call
+      payload = nil
+      expect(mock_gemini_client).to have_received(:generate_content) { |arg| payload = arg }
+      payload[:generationConfig]
+    end
+
+    it 'maps every supported key to its camelCase Gemini equivalent' do
+      send_with(
+        temperature: 0.4,
+        top_p: 0.85,
+        top_k: 32,
+        max_tokens: 512,
+        candidate_count: 2,
+        stop_sequences: %w[STOP END]
+      )
+
+      expect(generation_config_from_last_call).to eq(
+        temperature: 0.4,
+        topP: 0.85,
+        topK: 32,
+        maxOutputTokens: 512,
+        candidateCount: 2,
+        stopSequences: %w[STOP END]
+      )
+    end
+
+    it 'maps max_output_tokens to maxOutputTokens' do
+      send_with(max_output_tokens: 4096)
+
+      expect(generation_config_from_last_call).to eq(maxOutputTokens: 4096)
+    end
+  end
+
+  describe 'thinking config support' do
+    let(:prompt) { 'Test prompt with thinking config' }
+    let(:mock_gemini_client) { double('Gemini') }
+    let(:api_response) do
+      { 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Response' }] } }] }
+    end
+
+    before do
+      allow(mock_gemini_client).to receive(:generate_content).and_return(api_response)
+    end
+
+    def send_with(params)
+      instance = described_class.new(model:, type:, params:)
+      allow(instance).to receive(:client).and_return(mock_gemini_client)
+      instance.send(:generate_content, prompt)
+    end
+
+    it 'nests thinking_config under generationConfig.thinkingConfig' do
+      send_with(thinking_config: { thinking_level: 'minimal' })
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        {
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } }
+        }
+      )
+    end
+
+    it 'accepts a flat thinking_level convenience key' do
+      send_with(thinking_level: 'minimal')
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } })
+      )
+    end
+
+    it 'accepts thinking_budget' do
+      send_with(thinking_budget: 0)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { thinkingConfig: { thinkingBudget: 0 } })
+      )
+    end
+
+    it 'accepts include_thoughts' do
+      send_with(include_thoughts: true)
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { thinkingConfig: { includeThoughts: true } })
+      )
+    end
+
+    it 'accepts camelCase API keys as given' do
+      send_with(thinkingConfig: { thinkingLevel: 'high', thinkingBudget: 2048 })
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(
+          generationConfig: { thinkingConfig: { thinkingLevel: 'high', thinkingBudget: 2048 } }
+        )
+      )
+    end
+
+    it 'accepts string keys' do
+      send_with('thinking_config' => { 'thinking_level' => 'minimal' })
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } })
+      )
+    end
+
+    it 'combines thinking config with the other generation params' do
+      send_with(temperature: 0.2, max_tokens: 256, thinking_level: 'minimal')
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 256,
+            thinkingConfig: { thinkingLevel: 'minimal' }
+          }
+        )
+      )
+    end
+
+    it 'merges the flat and nested forms' do
+      send_with(thinking_config: { thinking_budget: 1024 }, thinking_level: 'low')
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(
+          generationConfig: { thinkingConfig: { thinkingBudget: 1024, thinkingLevel: 'low' } }
+        )
+      )
+    end
+  end
+
+  describe 'unmapped params' do
+    let(:prompt) { 'Test prompt with an unmapped param' }
+    let(:mock_gemini_client) { double('Gemini') }
+    let(:logger) { instance_double(Logger, warn: nil) }
+    let(:api_response) do
+      { 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Response' }] } }] }
+    end
+
+    before do
+      LlmConductor.configuration.logger = logger
+      allow(mock_gemini_client).to receive(:generate_content).and_return(api_response)
+    end
+
+    def send_with(params)
+      instance = described_class.new(model:, type:, params:)
+      allow(instance).to receive(:client).and_return(mock_gemini_client)
+      instance.send(:generate_content, prompt)
+    end
+
+    it 'warns instead of dropping an unknown key silently' do
+      send_with(reasoning_effort: 'high')
+
+      expect(logger).to have_received(:warn).with(/Skipping generationConfig param :reasoning_effort/)
+    end
+
+    it 'keeps sending the request when a key cannot be mapped' do
+      send_with(temperature: 0.5, reasoning_effort: 'high')
+
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { temperature: 0.5 })
+      )
+    end
+
+    it 'warns about an unknown key inside thinking_config and keeps the known ones' do
+      send_with(thinking_config: { thinking_level: 'minimal', mystery: 1 })
+
+      expect(logger).to have_received(:warn).with(/Skipping thinkingConfig param :mystery/)
+      expect(mock_gemini_client).to have_received(:generate_content).with(
+        hash_including(generationConfig: { thinkingConfig: { thinkingLevel: 'minimal' } })
+      )
+    end
+
+    it 'warns when thinking_config is not a hash' do
+      send_with(thinking_config: 'minimal')
+
+      expect(logger).to have_received(:warn).with(/expected a Hash, got String/)
+    end
+
+    it 'does not warn about supported params' do
+      send_with(temperature: 0.5, thinking_level: 'minimal')
+
+      expect(logger).not_to have_received(:warn)
+    end
+
+    it 'stays silent when no logger is configured' do
+      LlmConductor.configuration.logger = nil
+
+      expect { send_with(reasoning_effort: 'high') }.not_to raise_error
+    end
+  end
+
   describe '#client (private)' do
     let(:mock_gemini_client) { double('Gemini') }
 
