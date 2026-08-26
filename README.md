@@ -114,7 +114,7 @@ policy lives in `BaseClient`, driven by the two settings above.
 
 ```ruby
 config.max_retries = 3   # TOTAL attempts, not extra ones. 1 disables retrying.
-config.retry_delay = 1.0 # first retry after ~1s, then ~2s, then ~4s
+config.retry_delay = 1.0 # first retry after ~1s, the next after ~2s (doubling)
 ```
 
 **Retried**: `429`, `500`, `502`, `503`, `504`, `408`, and connection/read timeouts.
