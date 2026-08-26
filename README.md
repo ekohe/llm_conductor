@@ -9,6 +9,7 @@ A unified Ruby interface for multiple Language Model providers from [Ekohe](http
 - 🖼️ **Vision Support** - Send images alongside text (OpenAI, Anthropic, OpenRouter, Z.ai, Gemini)
 - 🔧 **Custom Parameters** - Fine-tune with temperature, top_p, and more
 - 💰 **Cost Tracking** - Automatic token counting and cost estimation
+- ♻️ **Automatic Retries** - Exponential backoff with jitter on rate limits and transient errors
 - ⚡ **Smart Configuration** - Environment variables or code-based setup
 - 📊 **Model Evaluation** - Compare models/vendors on cost, latency, tokens & LLM-judged quality (opt-in)
 
@@ -91,7 +92,11 @@ export ZAI_API_KEY=your-key-here
 ```ruby
 LlmConductor.configure do |config|
   config.default_model = 'gpt-4o-mini'
-  
+
+  # Retries on transient failures (see "Retries & Rate Limits" below)
+  config.max_retries = 3   # total attempts, including the first
+  config.retry_delay = 1.0 # seconds; seeds the exponential backoff
+
   config.openai(api_key: ENV['OPENAI_API_KEY'])
   config.anthropic(api_key: ENV['ANTHROPIC_API_KEY'])
   config.gemini(api_key: ENV['GEMINI_API_KEY'])
@@ -101,6 +106,28 @@ LlmConductor.configure do |config|
   config.zai(api_key: ENV['ZAI_API_KEY'])
 end
 ```
+
+### Retries & Rate Limits
+
+Transient provider failures are retried automatically for **every** provider — the
+policy lives in `BaseClient`, driven by the two settings above.
+
+```ruby
+config.max_retries = 3   # TOTAL attempts, not extra ones. 1 disables retrying.
+config.retry_delay = 1.0 # first retry after ~1s, the next after ~2s (doubling)
+```
+
+**Retried**: `429`, `500`, `502`, `503`, `504`, `408`, and connection/read timeouts.
+**Not retried**: `400`, `401`, `403`, `404`, `422` and TLS errors — a malformed
+request or a bad credential is identical on attempt two, so it surfaces immediately.
+
+Backoff is exponential with additive jitter, so a retry never fires sooner than
+configured but concurrent workers do not retry in lockstep. A `Retry-After` header
+takes precedence when the provider sends one. With `config.logger` set, each retry
+logs one line (attempt, status, delay — never the API key).
+
+Retries ride out short spikes; they do not survive a sustained quota outage.
+See the **[Retries & Rate Limits Guide](docs/retries.md)** for the full policy.
 
 ## Supported Providers
 
@@ -332,6 +359,7 @@ See [`examples/model_eval_usage.rb`](examples/model_eval_usage.rb) for a complet
 ## Documentation
 
 - **[Custom Parameters Guide](docs/custom-parameters.md)** - Temperature, top_p, and more
+- **[Retries & Rate Limits Guide](docs/retries.md)** - Backoff, jitter and which statuses are retried
 - **[Vision Support Guide](docs/vision-support.md)** - Using images with LLMs
 - **[Model Evaluation](#model-evaluation-opt-in)** - Compare models on cost, latency & LLM-judged quality
 - **[Examples](examples/)** - Working code examples for all providers
@@ -343,6 +371,7 @@ Check the [examples/](examples/) directory for comprehensive examples:
 - `simple_usage.rb` - Basic text generation
 - `ollama_params_usage.rb` - Custom parameters with Ollama
 - `gemini_thinking_usage.rb` - Gemini thinking configuration (`thinkingConfig`)
+- `retry_config_usage.rb` - Retry configuration and the resulting backoff curve
 - `gpt_vision_usage.rb` - Vision with OpenAI
 - `claude_vision_usage.rb` - Vision with Anthropic
 - `gemini_vision_usage.rb` - Vision with Gemini

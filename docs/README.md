@@ -14,6 +14,15 @@ Learn how to fine-tune LLM generation with parameters like `temperature`, `top_p
 **Currently supported**: Ollama, Gemini (including Gemini 3.x `thinkingConfig`)  
 **Coming soon**: OpenAI, Anthropic, Groq, OpenRouter, Z.ai
 
+### [Retries & Rate Limits](retries.md)
+How `max_retries` and `retry_delay` drive automatic retries. Includes:
+- Which statuses are retried, and which deliberately are not
+- The exponential backoff formula and its jitter
+- `Retry-After` handling
+- What retries fix, and what they do not
+
+**Applies to**: every provider — the policy lives in `BaseClient`
+
 ### [Vision Support](vision-support.md)
 Complete guide to using vision/multimodal capabilities. Includes:
 - Sending images with text prompts

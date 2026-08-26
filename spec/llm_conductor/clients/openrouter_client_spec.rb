@@ -315,4 +315,53 @@ RSpec.describe LlmConductor::Clients::OpenrouterClient do
       expect(result).to eq('This image shows a nature boardwalk in Wisconsin')
     end
   end
+
+  # OpenRouter used to carry its own retry loop, hardcoded to 5 attempts and 502
+  # only. That behaviour now comes from the shared policy in BaseClient, driven by
+  # configuration.max_retries / configuration.retry_delay.
+  describe 'retrying transient failures' do
+    let(:mock_openai_client) { double('OpenAI::Client') }
+    let(:server_error) { Faraday::ServerError.new(nil, { status: 502, headers: {}, body: '' }) }
+
+    before do
+      LlmConductor.configuration.max_retries = 3
+      LlmConductor.configuration.retry_delay = 0.5
+      allow(client).to receive_messages(client: mock_openai_client, rand: 0.0)
+    end
+
+    it 'retries a 502 from an overloaded free-tier model' do
+      calls = 0
+      allow(mock_openai_client).to receive(:chat) do
+        calls += 1
+        raise server_error if calls == 1
+
+        { 'choices' => [{ 'message' => { 'content' => 'recovered' } }] }
+      end
+
+      expect(client.generate_simple(prompt: 'Hi').output).to eq('recovered')
+      expect(calls).to eq(2)
+    end
+
+    it 'uses the configured attempt budget and delay rather than its old hardcoded 5/2s' do
+      allow(mock_openai_client).to receive(:chat).and_raise(server_error)
+
+      client.generate_simple(prompt: 'Hi')
+
+      expect(mock_openai_client).to have_received(:chat).exactly(3).times
+      expect(LlmConductor::Clients::Concerns::Retryable)
+        .to have_received(:sleep_for).with(0.5).once
+      expect(LlmConductor::Clients::Concerns::Retryable)
+        .to have_received(:sleep_for).with(1.0).once
+    end
+
+    it 'does not retry a 401 from a bad API key' do
+      allow(mock_openai_client).to receive(:chat)
+        .and_raise(Faraday::UnauthorizedError.new(nil, { status: 401, headers: {}, body: '' }))
+
+      response = client.generate_simple(prompt: 'Hi')
+
+      expect(mock_openai_client).to have_received(:chat).once
+      expect(response).not_to be_success
+    end
+  end
 end

@@ -24,6 +24,10 @@ RSpec.configure do |config|
   config.before do
     # Reset configuration to defaults
     LlmConductor.instance_variable_set(:@configuration, nil)
+
+    # Never spend real wall-clock time on retry backoff. The retry specs assert on
+    # this seam directly; every other spec just needs it to be free.
+    allow(LlmConductor::Clients::Concerns::Retryable).to receive(:sleep_for)
   end
 
   # Set up common test configuration

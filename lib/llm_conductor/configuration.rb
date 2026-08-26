@@ -12,6 +12,10 @@ module LlmConductor
       @default_model = 'gpt-5-mini'
       @default_vendor = :openai
       @timeout = 30
+      # Retry policy for transient provider failures, applied to every client by
+      # LlmConductor::Clients::Concerns::Retryable. max_retries is a TOTAL attempt
+      # budget including the first call (3 = one call plus at most two retries);
+      # retry_delay seeds the exponential backoff. See docs/retries.md.
       @max_retries = 3
       @retry_delay = 1.0
       @logger = nil
