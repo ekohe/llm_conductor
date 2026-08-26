@@ -3,13 +3,20 @@
 require 'tiktoken_ruby'
 require 'ollama-ai'
 require 'openai'
+require_relative 'concerns/retryable'
 
 module LlmConductor
   module Clients
     # Base client class providing common functionality for all LLM providers
     # including prompt building, token counting, and response formatting.
+    #
+    # Every provider request goes through Concerns::Retryable, so transient
+    # rate-limit/overload failures are retried according to
+    # configuration.max_retries and configuration.retry_delay. See
+    # docs/retries.md for the exact policy.
     class BaseClient
       include Prompts
+      include Concerns::Retryable
 
       attr_reader :model, :type, :params
 
@@ -22,7 +29,7 @@ module LlmConductor
       def generate(data:)
         prompt = build_prompt(data)
         input_tokens = calculate_tokens(prompt)
-        output_text = generate_content(prompt)
+        output_text = with_retries { generate_content(prompt) }
         output_tokens = calculate_tokens(output_text || '')
 
         # Logging AI request metadata if logger is set
@@ -39,7 +46,7 @@ module LlmConductor
       # Simple generation method that accepts a direct prompt and returns a Response object
       def generate_simple(prompt:)
         input_tokens = calculate_tokens(prompt)
-        output_text = generate_content(prompt)
+        output_text = with_retries { generate_content(prompt) }
         output_tokens = calculate_tokens(output_text || '')
 
         # Logging AI request metadata if logger is set

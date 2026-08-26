@@ -9,6 +9,9 @@ module LlmConductor
     #
     # Note: Z.ai uses OpenAI-compatible API format but with /v4/ path instead of /v1/
     # We use Faraday directly instead of the ruby-openai gem to properly handle the API path
+    #
+    # Transient failures are retried by BaseClient's Concerns::Retryable using
+    # configuration.max_retries / configuration.retry_delay.
     class ZaiClient < BaseClient
       include Concerns::VisionSupport
 
@@ -17,41 +20,28 @@ module LlmConductor
       def generate_content(prompt)
         content = format_content(prompt)
 
-        # Retry logic for transient errors (similar to OpenRouter)
-        max_retries = 3
-        retry_count = 0
-
-        begin
-          # Make direct HTTP request to Z.ai API since they use /v4/ instead of /v1/
-          response = http_client.post('chat/completions') do |req|
-            req.body = {
-              model:,
-              messages: [{ role: 'user', content: }]
-            }.to_json
-          end
-
-          # Response body is already parsed as Hash by Faraday's JSON middleware
-          response_data = response.body.is_a?(String) ? JSON.parse(response.body) : response.body
-          response_data.dig('choices', 0, 'message', 'content')
-        rescue Faraday::ServerError => e
-          retry_count += 1
-
-          # Log retry attempts if logger is configured
-          configuration.logger&.warn(
-            "Z.ai API error (attempt #{retry_count}/#{max_retries}): #{e.message}"
-          )
-
-          raise unless retry_count < max_retries
-
-          wait_time = 2**retry_count # Exponential backoff: 2, 4, 8 seconds
-          configuration.logger&.info("Retrying in #{wait_time}s...")
-          sleep(wait_time)
-          retry
+        # Make direct HTTP request to Z.ai API since they use /v4/ instead of /v1/
+        response = http_client.post('chat/completions') do |req|
+          req.body = {
+            model:,
+            messages: [{ role: 'user', content: }]
+          }.to_json
         end
+
+        # Response body is already parsed as Hash by Faraday's JSON middleware
+        response_data = response.body.is_a?(String) ? JSON.parse(response.body) : response.body
+        response_data.dig('choices', 0, 'message', 'content')
       end
 
       # HTTP client for making requests to Z.ai API
       # Z.ai uses /v4/ in their path, not /v1/ like OpenAI, so we use Faraday directly
+      #
+      # NOTE: this stack has no `response :raise_error` middleware, so an HTTP error
+      # from Z.ai comes back as a normal response with an error body rather than a
+      # raised Faraday error. The shared retry policy therefore never sees it — the
+      # same blind spot the hardcoded `rescue Faraday::ServerError` here had. Adding
+      # the middleware would change what Z.ai callers observe on failure (an error
+      # Response instead of a nil output), so it is left for a separate change.
       def http_client
         @http_client ||= begin
           config = LlmConductor.configuration.provider_config(:zai)
